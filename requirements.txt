@@ -1,0 +1,5 @@
+chromadb
+openai
+python-dotenv
+openai
+pinecone-client

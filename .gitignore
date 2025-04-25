@@ -23,3 +23,5 @@ Thumbs.db
 *.tar.gz
 *.bak
 *.old
+.env
+
