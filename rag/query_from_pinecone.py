@@ -37,7 +37,16 @@ def retrieve_answer(question):
 
     matches = search_result.matches
     if not matches:
-        return "❌ V databázi FAQ jsem nenašel odpověď na tuto otázku."
+        print("⚠️ Nenašel jsem odpověď v FAQ, používám fallback OpenAI...")
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": "Odpovídáš na otázky, pokud nejsou v databázi FAQ."},
+                {"role": "user", "content": question}
+            ]
+        )
+        return response.choices[0].message.content
+
 
     context = "\n".join([
         f"Q: {match['metadata']['question']}\nA: {match['metadata']['answer']}"
