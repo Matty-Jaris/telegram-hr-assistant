@@ -4,4 +4,5 @@ openai
 python-dotenv
 openai
 pinecone
+uvicorn
 
