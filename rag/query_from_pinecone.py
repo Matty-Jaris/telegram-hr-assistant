@@ -20,10 +20,11 @@ def normalize(text):
 def get_embedding(text):
     text = normalize(text)
     response = client.embeddings.create(
-        input=text,
-        model="text-embedding-3-small"
+        model="text-embedding-3-small",
+        input=[text]  # musí být seznam!
     )
     return response.data[0].embedding
+
 
 def retrieve_answer(question):
     query_vector = get_embedding(question)
@@ -80,3 +81,4 @@ if __name__ == "__main__":
         except KeyboardInterrupt:
             print("\n👋 Ukončuji. Měj se fajn!")
             break
+
