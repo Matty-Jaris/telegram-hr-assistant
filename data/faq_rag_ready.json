@@ -34,9 +34,5 @@
   {
     "question": "Máte zkušenosti s verzováním a týmovou spoluprací?",
     "answer": "Ano, denně používám Git s GitHubem, umím dělat pull‑request, code review a řešit konflikty."
-  },
-  {
-    "question": "Kdy máte čas na pohovor?",
-    "answer": "Každý všední den po 16:00 CEST, případně lze předem telefonicky domluvit jiný termín."
   }
 ]

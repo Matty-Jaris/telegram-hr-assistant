@@ -1,36 +1,40 @@
-# from fastapi import FastAPI
-# from pydantic import BaseModel
-# from rag.query_from_pinecone import retrieve_answer
-
-# app = FastAPI()
-
-# class QueryRequest(BaseModel):
-#     question: str
-
-# @app.post("/ask")
-# async def ask_question(request: QueryRequest):
-#     try:
-#         answer = retrieve_answer(request.question)
-#         return {"answer": answer}
-#     except Exception as e:
-#         return {"error": str(e)}
-
 from fastapi import FastAPI
 from pydantic import BaseModel
 import os
+from pathlib import Path
 from openai import OpenAI
 from rag.query_from_pinecone import retrieve_answer
+
 
 app = FastAPI()
 
 # OpenAI klient (správně pro novou verzi knihovny)
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+WELCOME_PATH = Path("prompts/welcome_message.md")
+if WELCOME_PATH.exists():
+    WELCOME_MSG = WELCOME_PATH.read_text(encoding="utf-8")
+else:
+    WELCOME_MSG = "**Welcome message nenalezen.**"
+
 class QueryRequest(BaseModel):
     question: str
 
 class MeetingIntentRequest(BaseModel):
     message: str
+
+
+
+@app.get("/welcome")
+async def get_welcome():
+    """
+    Vrátí statickou uvítací zprávu pro první kontakt s uživatelem.
+    Žádné parametry nepotřebuje – logiku 'poslat jen jednou'
+    řeší volající (např. handler /start v Telegram bota).
+    """
+    return {"welcome": WELCOME_MSG}
+
+
 
 @app.post("/ask")
 async def ask_question(request: QueryRequest):
@@ -39,6 +43,8 @@ async def ask_question(request: QueryRequest):
         return {"answer": answer}
     except Exception as e:
         return {"error": str(e)}
+
+
 
 @app.post("/check_meeting_intent")
 async def check_meeting_intent(request: MeetingIntentRequest):
