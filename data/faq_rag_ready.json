@@ -5,15 +5,11 @@
   },
   {
     "question": "Jaké jsou vaše platové očekávání?",
-    "answer": "Preferuji férové ohodnocení odpovídající juniorní web pozici v Praze (orientačně 50 000 – 55 000 Kč brutto), ale jsem otevřen diskusi podle rozsahu zodpovědností."
+    "answer": "Preferuji férové ohodnocení odpovídající juniorní pozici v Praze (orientačně 50 000 – 60 000 Kč brutto), ale jsem otevřen diskusi podle rozsahu zodpovědností."
   },
   {
     "question": "Preferujete práci na dálku nebo v kanceláři?",
     "answer": "Preferuji hybrid (2‑3 dny remote), ale plný remote či on‑site v Praze mi také vyhovuje."
-  },
-  {
-    "question": "Ve kterých technologiích se cítíte nejjistější?",
-    "answer": "Python (Django, Flask, FastAPI), HTML 5, CSS / Tailwind, Git + GitHub, základy JavaScriptu a SQL."
   },
   {
     "question": "Jaké máte zkušenosti s Pythonem?",
@@ -21,7 +17,7 @@
   },
   {
     "question": "Proč přecházíte z pedagogiky do IT?",
-    "answer": "Po 11 letech učení chci své znalosti programování posunout do profesní roviny a řešit reálné projekty v praxi. Pedagogické dovednosti mi pomáhají při práci v týmu i při dokumentaci."
+    "answer": "Po 11 letech učení chci své znalosti programování posunout do profesní roviny a řešit reálné projekty v praxi. Pedagogické dovednosti mi pomáhají při učení novým věcem, práci v týmu i při dokumentaci."
   },
   {
     "question": "Jakou úroveň angličtiny ovládáte?",
@@ -32,7 +28,47 @@
     "answer": "Preferuji práci v Praze nebo remote; relokaci mimo ČR aktuálně neplánuji, ale krátkodobé služební cesty jsou v pořádku."
   },
   {
-    "question": "Máte zkušenosti s verzováním a týmovou spoluprací?",
-    "answer": "Ano, denně používám Git s GitHubem, umím dělat pull‑request, code review a řešit konflikty."
-  }
+    "question": "Řekni mi něco o Martinovi",
+    "answer": "Martin Jarábek je juniorní vývojář se zaměřením na Python, FastAPI a webové technologie. Má více než 10 let zkušeností s prací s lidmi jako učitel a do IT přináší výborné komunikační schopnosti, systematičnost a touhu zjednodušovat složité věci pomocí automatizace. Aktivně tvoří projekty jako například svého Telegram asistenta a aplikaci na počasí. Je pečlivý, spolehlivý a dobře organizovaný."
+  },
+  {
+    "question": "Jak by si představil Martin",
+    "answer": "Martin Jarábek je juniorní vývojář se zaměřením na Python, FastAPI a webové technologie. Má více než 10 let zkušeností s prací s lidmi jako učitel a do IT přináší výborné komunikační schopnosti, systematičnost a touhu zjednodušovat složité věci pomocí automatizace. Aktivně tvoří projekty jako například svého Telegram asistenta a aplikaci na počasí. Je pečlivý, spolehlivý a dobře organizovaný."
+  },
+  {
+    "question": "Pověz mi něco o Martinovi",
+    "answer": "Martin Jarábek je juniorní vývojář se zaměřením na Python, FastAPI a webové technologie. Má více než 10 let zkušeností s prací s lidmi jako učitel a do IT přináší výborné komunikační schopnosti, systematičnost a touhu zjednodušovat složité věci pomocí automatizace. Aktivně tvoří projekty jako například svého Telegram asistenta a aplikaci na počasí. Je pečlivý, spolehlivý a dobře organizovaný."
+  },
+  {
+    "question": "Co tě baví na programování?",
+    "answer": "Na programování mě baví, jak rychle člověka vtáhne samotný proces tvorby. Líbí se mi, že je to neustálé řešení problémů a hledání cest, které nakonec vedou k funkčnímu výsledku. Je skvělý pocit vidět, že něco funguje díky vlastní práci. Říká se, že když vám při něčem utíká čas, děláte to, co vás baví – a to přesně u mě platí."
+  },
+  {
+    "question": "Na čem právě pracuješ?",
+    "answer": "Aktuálně vylepšuji svého osobního asistenta – chatbota pro Telegram, který pomáhá s prezentací mých projektů a komunikací s personalisty. Obecně se snažím vybírat projekty, které mají praktické využití a slouží lidem každý den."
+  },
+  {
+    "question": "Jaká je tvoje silná stránka?",
+    "answer": "Mou nejsilnější stránkou je učenlivost. Když se rozhodnu něco zvládnout, jdu za tím systematicky – i když začátky bývají těžké. Věřím, že schopnost učit se a vytrvat je klíčová nejen v programování, ale i v osobním růstu."
+  },
+  {
+    "question": "Jaké technologie používáš nejčastěji?",
+    "answer": "Nejčastěji pracuji s Pythonem (především FastAPI a Django) a s HTML/CSS. Na stylování používám Tailwind CSS, verzování řeším přes Git a GitHub. Pro automatizace používám n8n, který propojuji s API a externími službami. Vedle toho se učím JavaScript a základy SQL."
+  },
+  {
+    "question": "V čem umíš programovat?",
+    "answer": "Nejvíc se orientuji v Pythonu – ten používám na tvorbu webových aplikací, API i skriptování. Umím pracovat s HTML, CSS a částečně JavaScriptem. Dále zvládám práci s Gitem, píšu dotazy v SQL a učím se pokročilejší práci s API a backend logikou."
+  },
+  {
+    "question": "Jaké máš zkušenosti s webem?",
+    "answer": "Vytvářím vlastní webové aplikace v Pythonu – hlavně pomocí FastAPI a Django. Zvládám šablony (Jinja2), routování, práci s formuláři, čtení dat z API, nasazení na služby jako Render nebo Railway a úpravu stylů přes Tailwind CSS. Moje portfolio a projekty jsou dostupné na GitHubu a veřejně online."
+  },
+  {
+    "question": "Děláš i backend nebo frontend?",
+    "answer": "Zaměřuji se hlavně na backend – FastAPI, Django, zpracování requestů, logiku a práci s daty. Frontend zvládám na základní úrovni: HTML, CSS, Tailwind a jednoduchý JavaScript. Většinu projektů stavím end-to-end, takže umím celé flow od API po zobrazení ve webové stránce."
+  },
+  {
+    "question": "Rozumíš Gitu a práci v týmu?",
+    "answer": "Ano – denně pracuji s Gitem a GitHubem na svých projektech. Umím vytvářet a spravovat větve, dělat pull requesty, řešit konflikty a přehledně commitovat změny. Využívám Git i při osobních experimentech, ale držím si návyky jako v týmu – čisté zprávy, oddělení verzí a průběžné zálohování. Zkušenost s reálným týmem zatím sbírám přes spolupráce a veřejné repozitáře, ale prostředí týmové práce mi je přirozené díky předchozím letům ve škole."
+  },
 ]
