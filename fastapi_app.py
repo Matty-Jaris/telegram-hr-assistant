@@ -73,27 +73,23 @@
 
 from fastapi import FastAPI
 from pydantic import BaseModel
-import os
+import os, re
 from pathlib import Path
 from openai import OpenAI
 from rag.query_from_pinecone import retrieve_answer
 
 app = FastAPI()
-
-# ───────────────────────────────────────────────────────────────
-# OpenAI klient
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# Welcome message
+# ── jednoduchá paměť CTA (chat_id -> "github" | "portfolio" | "leetcode") ──
+last_suggestion_memory: dict[str, str] = {}
+
+# ── welcome message ────────────────────────────────────────────────────────
 WELCOME_MSG = Path("prompts/welcome_message.md").read_text(
     encoding="utf-8"
 ) if Path("prompts/welcome_message.md").exists() else "**Welcome message nenalezen.**"
 
-# Naivní per‑chat paměť („co jsem právě nabídl?“)
-last_suggestion_memory: dict[str, str] = {}      # chat_id → "cv" | "meeting" | "github" | "portfolio"
-
-# ───────────────────────────────────────────────────────────────
-# Pydantic modely
+# ── Pydantic modely ────────────────────────────────────────────────────────
 class QueryRequest(BaseModel):
     question: str
 
@@ -104,103 +100,70 @@ class ChatMessage(BaseModel):
     chat_id: str
     message: str
 
-# ───────────────────────────────────────────────────────────────
+# ── /welcome (beze změn) ───────────────────────────────────────────────────
 @app.get("/welcome")
 async def get_welcome():
-    """Statická uvítací zpráva"""
     return {"welcome": WELCOME_MSG}
 
-# ───────────────────────────────────────────────────────────────
+# ── /ask (beze změn) ───────────────────────────────────────────────────────
 @app.post("/ask")
-async def ask_question(request: QueryRequest):
-    """RAG / FAQ dotaz (přímo, bez CTA logiky)"""
+async def ask_question(req: QueryRequest):
     try:
-        answer = retrieve_answer(request.question)
-        return {"answer": answer}
+        return {"answer": retrieve_answer(req.question)}
     except Exception as e:
         return {"error": str(e)}
 
-# ───────────────────────────────────────────────────────────────
+# ── /check_meeting_intent (beze změn) ──────────────────────────────────────
 @app.post("/check_meeting_intent")
-async def check_meeting_intent(request: MeetingIntentRequest):
-    """
-    Vrací YES / NO podle toho, zda text obsahuje návrh dne/času.
-    (Původní funkčnost beze změn.)
-    """
-    print("➡️ Přišel request:", request.message)
+async def check_meeting_intent(req: MeetingIntentRequest):
     try:
-        response = client.chat.completions.create(
+        resp = client.chat.completions.create(
             model="gpt-4o",
             messages=[
-                {"role": "system", "content":
-                    "Jsi asistent, který odpovídá pouze YES nebo NO. "
-                    "YES pokud zpráva obsahuje návrh dne nebo času schůzky. "
-                    "NO pokud ne. Pokud si nejsi jistý, odpověz NO."
-                 },
-                {"role": "user", "content": request.message}
+                {"role": "system",
+                 "content": "Jsi asistent, který vrací YES/NO podle toho, "
+                            "zda text obsahuje návrh dne nebo času schůzky."},
+                {"role": "user", "content": req.message}
             ],
-            temperature=0,
-            max_tokens=5
+            temperature=0, max_tokens=5
         )
-        intent = response.choices[0].message.content.strip().upper()
-        print("🟢 OpenAI odpověď:", intent)
-        return {"intent": intent}
+        return {"intent": resp.choices[0].message.content.strip().upper()}
     except Exception as e:
-        print("❌ Chyba:", e)
         return {"error": str(e)}
 
-# ───────────────────────────────────────────────────────────────
+# ── /chat – hlavní konverzace + CTA logika ─────────────────────────────────
 @app.post("/chat")
 async def chat_handler(msg: ChatMessage):
-    """
-    Hlavní konverzační endpoint.
-    Vrací: { "answer": "...", "action": "cv|meeting|plain" }
-    - ukládá výzvy do paměti
-    - reaguje na 'ano' / 'jo' podle uložené výzvy
-    - jinak volá RAG jako fallback
-    """
-    user_input = msg.message.strip().lower()
     chat_id    = msg.chat_id
+    user_input = msg.message.strip().lower()
 
-    # 1️⃣  Uživatel říká ANO / JO  ─────────────────────────────
+    # 1) odpověď "ano" / "jo" navazuje na poslední CTA
     if user_input in {"ano", "jo", "jasně", "souhlasím"}:
         last = last_suggestion_memory.get(chat_id)
-
-        if last == "cv":
-            return {"answer": "Posílám životopis. 📄", "action": "cv"}
-        if last == "meeting":
-            return {"answer": "Nabízím tyto volné termíny…", "action": "meeting"}
         if last == "github":
-            return {"answer": "Tady je Martinův GitHub: https://github.com/Matty-Jaris",
-                    "action": "plain"}
+            return {"answer": "Tady je GitHub: https://github.com/Matty-Jaris"}
         if last == "portfolio":
-            return {"answer": "Portfolio najdete na: https://portfolio-weather.onrender.com",
-                    "action": "plain"}
+            return {"answer": "Portfolio: https://portfolio-weather.onrender.com"}
+        if last == "leetcode":
+            return {"answer": "LeetCode řešení: https://github.com/Matty-Jaris/LeetCode-solutions"}
+        # na nic nenavazujeme
+        return {"answer": "Na co přesně reagujete? GitHub, portfolio nebo LeetCode?"}
 
-        return {"answer": "Na co přesně reagujete? GitHub, CV nebo schůzku?",
-                "action": "plain"}
-
-    # 2️⃣  Dotaz vyvolávající výzvu (uložíme paměť) ────────────
-    if any(w in user_input for w in {"cv", "životopis"}):
-        last_suggestion_memory[chat_id] = "cv"
-        return {"answer": "Mám vám poslat životopis?", "action": "plain"}
-
-    if any(w in user_input for w in {"pohovor", "schůzka", "setkat"}):
-        last_suggestion_memory[chat_id] = "meeting"
-        return {"answer": "Mám nabídnout volné termíny na schůzku?", "action": "plain"}
-
-    if "github" in user_input:
-        last_suggestion_memory[chat_id] = "github"
-        return {"answer": "Chcete vidět GitHub?", "action": "plain"}
-
-    if "portfolio" in user_input:
-        last_suggestion_memory[chat_id] = "portfolio"
-        return {"answer": "Chcete vidět portfolio?", "action": "plain"}
-
-    # 3️⃣  Fallback – RAG / FAQ  ───────────────────────────────
+    # 2) fallback – FAQ / RAG
     try:
         answer = retrieve_answer(user_input)
-        return {"answer": answer, "action": "plain"}
     except Exception as e:
-        return {"answer": f"Došlo k chybě: {e}", "action": "plain"}
+        return {"answer": f"Došlo k chybě: {e}"}
+
+    # 3) detekce CTA v odpovědi (5 otázek)
+    if re.search(r"chcete.*github", answer, re.I):
+        last_suggestion_memory[chat_id] = "github"
+    elif re.search(r"chcete.*portfolio", answer, re.I):
+        last_suggestion_memory[chat_id] = "portfolio"
+    elif re.search(r"chcete.*leetcode", answer, re.I):
+        last_suggestion_memory[chat_id] = "leetcode"
+    # kontaktní otázka s nabídkou CV necháváme na regexu v n8n
+
+    return {"answer": answer}
+
 
