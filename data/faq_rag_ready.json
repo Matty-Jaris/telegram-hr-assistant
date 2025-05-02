@@ -53,8 +53,8 @@
   },
   {
     "question": "Jaké technologie používáš nejčastěji?",
-    "answer": "Nejčastěji pracuji s Pythonem (především FastAPI a Django) a s HTML/CSS. Na stylování používám Tailwind CSS, verzování řeším přes Git a GitHub. Pro automatizace používám n8n, který propojuji s API a externími službami. Vedle toho se učím JavaScript a základy SQL."
-  },
+    "answer": "Nejčastěji pracuji s Pythonem (především FastAPI a Django) a s HTML/CSS. Na stylování používám Tailwind CSS, verzování řeším přes Git a GitHub. Pro automatizace používám n8n, který propojuji s API a externími službami. Vedle toho se učím JavaScript a základy SQL. Chcete vidět ukázku projektu?"
+  },  
   {
     "question": "V čem umíš programovat?",
     "answer": "Nejvíc se orientuji v Pythonu – ten používám na tvorbu webových aplikací, API i skriptování. Umím pracovat s HTML, CSS a částečně JavaScriptem. Dále zvládám práci s Gitem, píšu dotazy v SQL a učím se pokročilejší práci s API a backend logikou."
@@ -73,16 +73,16 @@
   },
   {
     "question": "Máš nějaké ukázky projektů?",
-    "answer": "Ano, své projekty pravidelně publikuji na GitHubu. Zaměřuji se hlavně na webové aplikace v Pythonu, API a automatizace pomocí n8n. Mezi mé hlavní ukázky patří osobní portfolio, aplikace na počasí ve FastAPI a HR asistent pro Telegram. Všechny repozitáře najdete tady: https://github.com/Matty-Jaris"
+    "answer": "Ano, své projekty pravidelně publikuji na GitHubu. Zaměřuji se hlavně na webové aplikace v Pythonu, API a automatizace pomocí n8n. Mezi mé hlavní ukázky patří osobní portfolio, aplikace na počasí ve FastAPI a HR asistent pro Telegram. Všechny repozitáře najdete tady: https://github.com/Matty-Jaris. Chcete se na něco konkrétního podívat?"
   },
   {
     "question": "Můžeš mi ukázat portfolio?",
-    "answer": "Ano, vytvořil jsem vlastní webové portfolio, kde prezentuji své projekty, životopis i řešené úlohy. Najdete tam vše přehledně na jednom místě: https://portfolio-weather.onrender.com"
+    "answer": "Ano, vytvořil jsem vlastní webové portfolio, kde prezentuji své projekty, životopis i řešené úlohy. Najdete tam vše přehledně na jednom místě: https://portfolio-weather.onrender.com. Chcete si projít konkrétní sekci?"
   },
   {
     "question": "Kde najdu tvoje řešené úlohy v LeetCode?",
-    "answer": "Svůj pokrok v algoritmických úlohách zaznamenávám veřejně na GitHubu. Ke každé úloze píšu krátký komentář a strukturovaný kód v Pythonu. Vše je dostupné zde: https://github.com/Matty-Jaris/LeetCode-solutions"
-  },
+    "answer": "Svůj pokrok v algoritmických úlohách zaznamenávám veřejně na GitHubu. Ke každé úloze píšu krátký komentář a strukturovaný kód v Pythonu. Vše je dostupné zde: https://github.com/Matty-Jaris/LeetCode-solutions. Chcete vidět konkrétní příklad?"
+  },  
   {
     "question": "Jaký typ spolupráce hledáš?",
     "answer": "Preferuji spolupráci na IČO, protože mi po odvodech zůstane více prostředků a mohu si lépe řídit vlastní náklady. Nevadí mi ale ani HPP, pokud to dává smysl pro obě strany. Nejvíce mi vyhovuje stabilní projekt, kde se mohu učit a růst, ideálně pod vedením zkušenějších vývojářů."
@@ -93,8 +93,8 @@
   },
   {
     "question": "Jak tě můžeme kontaktovat?",
-    "answer": "Nejlépe e-mailem: martin.jar91@seznam.cz, nebo telefonicky: +420727919163. Rád také odpovím přímo tady v chatu, kde si můžeme domluvit schůzku."
-  },
+    "answer": "Nejlépe e-mailem: martin.jar91@seznam.cz, nebo telefonicky: +420727919163. Rád také odpovím přímo tady v chatu, kde si můžeme domluvit schůzku. Mám vám poslat i životopis?"
+  },  
   {
     "question": "Jaký máš očekávání od práce?",
     "answer": "Chci najít prostředí, kde budu moct růst jako vývojář – učit se od zkušenějších kolegů, přispívat na reálných projektech a postupně přebírat zodpovědnost. Zároveň je pro mě důležitá přátelská atmosféra, otevřená komunikace a prostor pro samostatnost."
