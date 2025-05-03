@@ -39,7 +39,7 @@ async def get_welcome():
 @app.post("/ask")
 async def ask_question(request: QueryRequest):
     try:
-        answer = retrieve_answer(request.question)
+        answer = retrieve_answer(request.message)
         return {"answer": answer}
     except Exception as e:
         return {"error": str(e)}
