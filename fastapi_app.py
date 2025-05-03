@@ -137,7 +137,20 @@ async def chat_handler(msg: ChatMessage):
     chat_id    = msg.chat_id
     user_input = msg.message.strip().lower()
 
-    # 1) odpověď "ano" / "jo" navazuje na poslední CTA
+    # dávám krátké aliasy na klíčová slova
+    KW_GH   = {"github", "repo", "projekty"}
+    KW_PORT = {"portfolio"}
+    KW_LC   = {"leetcode"}
+
+    # 0) explicitní jednoslovné příkazy → rovnou odkaz ----------------
+    if user_input in KW_GH:
+        return {"answer": "Tady je GitHub: https://github.com/Matty-Jaris"}
+    if user_input in KW_PORT:
+        return {"answer": "Portfolio: https://portfolio-weather.onrender.com"}
+    if user_input in KW_LC:
+        return {"answer": "LeetCode řešení: https://github.com/Matty-Jaris/LeetCode-solutions"}
+
+    # 1) odpověď typu "ano / jo" -------------------------------------
     if user_input in {"ano", "jo", "jasně", "souhlasím"}:
         last = last_suggestion_memory.get(chat_id)
         if last == "github":
@@ -146,24 +159,32 @@ async def chat_handler(msg: ChatMessage):
             return {"answer": "Portfolio: https://portfolio-weather.onrender.com"}
         if last == "leetcode":
             return {"answer": "LeetCode řešení: https://github.com/Matty-Jaris/LeetCode-solutions"}
-        # na nic nenavazujeme
+        # nic uloženého
         return {"answer": "Na co přesně reagujete? GitHub, portfolio nebo LeetCode?"}
 
-    # 2) fallback – FAQ / RAG
+    # 2) dotaz obsahuje klíčová slova → uložíme CTA předem ------------
+    if any(kw in user_input for kw in KW_GH):
+        last_suggestion_memory[chat_id] = "github"
+    elif any(kw in user_input for kw in KW_PORT):
+        last_suggestion_memory[chat_id] = "portfolio"
+    elif any(kw in user_input for kw in KW_LC):
+        last_suggestion_memory[chat_id] = "leetcode"
+
+    # 3) FAQ / RAG ----------------------------------------------------
     try:
         answer = retrieve_answer(user_input)
     except Exception as e:
         return {"answer": f"Došlo k chybě: {e}"}
 
-    # 3) detekce CTA v odpovědi (5 otázek)
-    if re.search(r"chcete.*github", answer, re.I):
-        last_suggestion_memory[chat_id] = "github"
-    elif re.search(r"chcete.*portfolio", answer, re.I):
-        last_suggestion_memory[chat_id] = "portfolio"
-    elif re.search(r"chcete.*leetcode", answer, re.I):
-        last_suggestion_memory[chat_id] = "leetcode"
-    # kontaktní otázka s nabídkou CV necháváme na regexu v n8n
+    # 3a) pokud RAG nevrátil CTA, připojíme ji dynamicky --------------
+    if last_suggestion_memory.get(chat_id) == "github" and "github" not in answer.lower():
+        answer += " Chcete vidět GitHub?"
+    elif last_suggestion_memory.get(chat_id) == "portfolio" and "portfolio" not in answer.lower():
+        answer += " Chcete vidět portfolio?"
+    elif last_suggestion_memory.get(chat_id) == "leetcode" and "leetcode" not in answer.lower():
+        answer += " Chcete vidět příklad z LeetCode?"
 
     return {"answer": answer}
+
 
 
