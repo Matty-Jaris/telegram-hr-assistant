@@ -73,3 +73,33 @@ async def check_meeting_intent(request: MeetingIntentRequest):
 
 
 
+@app.post("/extract_date_time")
+async def extract_date_time(request: MeetingIntentRequest):
+    print("➡️ Přišel request na extrakci termínu:", request.message)  # Debug log
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": (
+                    "Jsi asistent, který z textu extrahuje přesné datum a čas schůzky. "
+                    "Pokud je v textu uveden termín, vrať jej ve formátu DD.MM.YYYY HH:mm. "
+                    "Pokud v textu nelze najít přesný termín, odpověz pouze slovem NEPLATNÉ."
+                )},
+                {"role": "user", "content": request.message}
+            ],
+            temperature=0,
+            max_tokens=20
+        )
+
+        extracted_term = response.choices[0].message.content.strip()
+        print("🟢 OpenAI extrahovaný termín:", extracted_term)  # Debug log
+
+        if extracted_term == "NEPLATNÉ":
+            return {"success": False, "term": None, "message": "Datum a čas nebyly rozpoznány."}
+
+        return {"success": True, "term": extracted_term, "message": "Datum a čas úspěšně rozpoznány."}
+
+    except Exception as e:
+        print("❌ Chyba při extrakci termínu:", e)  # Debug log
+        return {"success": False, "term": None, "error": str(e)}
+
