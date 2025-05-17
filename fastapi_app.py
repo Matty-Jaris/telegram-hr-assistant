@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 from openai import OpenAI
 from rag.query_from_pinecone import retrieve_answer
+from datetime import datetime
 
 
 app = FastAPI()
@@ -72,34 +73,46 @@ async def check_meeting_intent(request: MeetingIntentRequest):
         return {"error": str(e)}
 
 
+from datetime import datetime
 
 @app.post("/extract_date_time")
 async def extract_date_time(request: MeetingIntentRequest):
-    print("➡️ Přišel request na extrakci termínu:", request.message)  # Debug log
+    print("➡️ Zpráva od n8n:", request.message)  # Debug log
     try:
+        today = datetime.today()
+        current_year = today.year
+
+        prompt = (
+            "Tvým úkolem je rozpoznat termín schůzky ze zadané zprávy uživatele. "
+            "Pokud najdeš datum a čas, vrať výstup ve formátu DD.MM.YYYY HH:mm. "
+            f"Pokud není uveden rok, doplň aktuální ({current_year}). "
+            "Pokud je uveden jen den v týdnu (např. 'středa') a datum (např. '21.5.'), a čas (např. '17:00'), zformátuj výstup. "
+            "Příklady:\n"
+            "- 'středa 21.5. v 17:00' → 21.05.2024 17:00\n"
+            "- 'čtvrtek 6.6.2024 v 9 hodin' → 06.06.2024 09:00\n"
+            "- 'v pátek odpoledne' → NEPLATNÉ\n"
+            "- 'zítra v 14:00' → NEPLATNÉ\n"
+            "Pokud není termín dostatečně konkrétní, odpověz přesně NEPLATNÉ."
+        )
+
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
-                {"role": "system", "content": (
-                    "Jsi asistent, který z textu extrahuje přesné datum a čas schůzky. "
-                    "Pokud je v textu uveden termín, vrať jej ve formátu DD.MM.YYYY HH:mm. "
-                    "Pokud v textu nelze najít přesný termín, odpověz pouze slovem NEPLATNÉ."
-                )},
+                {"role": "system", "content": prompt},
                 {"role": "user", "content": request.message}
             ],
             temperature=0,
-            max_tokens=20
+            max_tokens=30
         )
 
         extracted_term = response.choices[0].message.content.strip()
-        print("🟢 OpenAI extrahovaný termín:", extracted_term)  # Debug log
+        print("🟢 Rozpoznaný termín:", extracted_term)
 
-        if extracted_term == "NEPLATNÉ":
+        if extracted_term.upper() == "NEPLATNÉ":
             return {"success": False, "term": None, "message": "Datum a čas nebyly rozpoznány."}
 
         return {"success": True, "term": extracted_term, "message": "Datum a čas úspěšně rozpoznány."}
 
     except Exception as e:
-        print("❌ Chyba při extrakci termínu:", e)  # Debug log
+        print("❌ Chyba při extrakci termínu:", e)
         return {"success": False, "term": None, "error": str(e)}
-
