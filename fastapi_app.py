@@ -7,6 +7,7 @@ from rag.query_from_pinecone import retrieve_answer
 from datetime import datetime
 
 
+
 app = FastAPI()
 
 # OpenAI klient (správně pro novou verzi knihovny)
@@ -22,6 +23,9 @@ class QueryRequest(BaseModel):
     question: str
 
 class MeetingIntentRequest(BaseModel):
+    message: str
+
+class ContactInfoRequest(BaseModel):
     message: str
 
 
@@ -116,3 +120,45 @@ async def extract_date_time(request: MeetingIntentRequest):
     except Exception as e:
         print("❌ Chyba při extrakci termínu:", e)
         return {"success": False, "term": None, "error": str(e)}
+
+
+@app.post("/parse_contact_info")
+async def parse_contact_info(request: ContactInfoRequest):
+    print("➡️ Parsing kontaktu:", request.message)
+    try:
+        prompt = (
+            "Z následující zprávy extrahuj jméno, telefonní číslo a e-mail. "
+            "Výstup vrať přesně ve formátu JSON:\n"
+            "{\"name\": \"...\", \"phone\": \"...\", \"email\": \"...\"}\n\n"
+            f"Zpráva: {request.message}"
+        )
+
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.2,
+            max_tokens=150
+        )
+
+        content = response.choices[0].message.content.strip()
+
+        print("🟢 Výstup OpenAI:\n", content)
+
+        # Pokus o převod na dict (bezpečnější verze)
+        import json
+        import re
+        json_string = re.sub(r"```(?:json)?\n?|```", "", content.strip())
+        result = json.loads(json_string)
+
+        return {
+            "success": True,
+            "name": result.get("name"),
+            "phone": result.get("phone"),
+            "email": result.get("email")
+        }
+
+    except Exception as e:
+        print("❌ Chyba při parsování kontaktu:", e)
+        return {"success": False, "error": str(e)}
