@@ -11,6 +11,7 @@ from fastapi.responses import JSONResponse
 
 
 
+
 app = FastAPI()
 
 # OpenAI klient (správně pro novou verzi knihovny)
@@ -194,16 +195,22 @@ async def ask_stream(request: StreamedQuestionRequest):
             if delta := chunk.choices[0].delta.get("content"):
                 full_message += delta
 
-                # Aktualizuj zprávu v Telegramu (živé dopisování)
-                requests.post(TELEGRAM_API, data={
+                print("🧩 Sending:", full_message)
+
+                res = requests.post(TELEGRAM_API, data={
                     "chat_id": request.chat_id,
                     "message_id": request.message_id,
                     "text": full_message
                 })
+
+                print("📨 Telegram:", res.status_code, res.text)
+
 
         return JSONResponse(content={"success": True})
 
     except Exception as e:
         print("❌ Chyba ve streamu:", e)
         return {"success": False, "error": str(e)}
+    
+    print("✅ TELEGRAM_TOKEN:", TELEGRAM_TOKEN[:10], "...")
 
