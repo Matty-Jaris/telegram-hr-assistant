@@ -5,6 +5,9 @@ from pathlib import Path
 from openai import OpenAI
 from rag.query_from_pinecone import retrieve_answer
 from datetime import datetime
+import requests
+from fastapi.responses import JSONResponse
+
 
 
 
@@ -27,6 +30,12 @@ class MeetingIntentRequest(BaseModel):
 
 class ContactInfoRequest(BaseModel):
     message: str
+
+class StreamedQuestionRequest(BaseModel):
+    question: str
+    chat_id: str
+    message_id: int
+
 
 
 
@@ -162,3 +171,39 @@ async def parse_contact_info(request: ContactInfoRequest):
     except Exception as e:
         print("❌ Chyba při parsování kontaktu:", e)
         return {"success": False, "error": str(e)}
+
+@app.post("/ask_stream")
+async def ask_stream(request: StreamedQuestionRequest):
+    try:
+        # Příprava streamovaného požadavku na OpenAI
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "user", "content": request.question}
+            ],
+            stream=True
+        )
+
+        # Telegram API
+        TELEGRAM_TOKEN = os.getenv("TELEGRAM_API_TOKEN")
+        TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/editMessageText"
+
+        full_message = ""
+
+        for chunk in response:
+            if delta := chunk.choices[0].delta.get("content"):
+                full_message += delta
+
+                # Aktualizuj zprávu v Telegramu (živé dopisování)
+                requests.post(TELEGRAM_API, data={
+                    "chat_id": request.chat_id,
+                    "message_id": request.message_id,
+                    "text": full_message
+                })
+
+        return JSONResponse(content={"success": True})
+
+    except Exception as e:
+        print("❌ Chyba ve streamu:", e)
+        return {"success": False, "error": str(e)}
+
