@@ -7,6 +7,7 @@ from rag.query_from_pinecone import retrieve_answer
 from datetime import datetime
 import requests
 from fastapi.responses import JSONResponse
+from rag.query_from_pinecone import retrieve_answer
 
 
 
@@ -173,35 +174,48 @@ async def parse_contact_info(request: ContactInfoRequest):
         print("❌ Chyba při parsování kontaktu:", e)
         return {"success": False, "error": str(e)}
 
+from rag.query_from_pinecone import retrieve_answer  # přidej nahoru k ostatním
+
 @app.post("/ask_stream")
 async def ask_stream(request: StreamedQuestionRequest):
     try:
-        # Příprava streamovaného požadavku na OpenAI
+        # ⬅️ Získání kontextu z FAQ (RAG)
+        faq_context = retrieve_answer(request.question)
+        if not faq_context:
+            faq_context = ""  # Fallback pro případ None
+
+        # 🔁 Příprava streamovaného požadavku na OpenAI
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
+                {"role": "system", "content": faq_context},
                 {"role": "user", "content": request.question}
             ],
             stream=True
         )
 
-        # Telegram API
+        # 📬 Telegram API
         TELEGRAM_TOKEN = os.getenv("TELEGRAM_API_TOKEN")
         TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/editMessageText"
 
         full_message = ""
-
         previous = ""
+        import time
+        last_sent = time.time()
 
         for chunk in response:
             if hasattr(chunk.choices[0].delta, "content"):
                 delta = chunk.choices[0].delta.content
                 full_message += delta
 
+                # 🛡 Přeskakuj stejné nebo příliš časté zprávy
                 if full_message.strip() == previous.strip():
+                    continue
+                if time.time() - last_sent < 0.15:
                     continue
 
                 previous = full_message
+                last_sent = time.time()
 
                 print("🧩 Sending:", full_message)
 
@@ -213,11 +227,10 @@ async def ask_stream(request: StreamedQuestionRequest):
 
                 print("📨 Telegram:", res.status_code, res.text)
 
-
-
         return JSONResponse(content={"success": True})
 
     except Exception as e:
         print("❌ Chyba ve streamu:", e)
         return {"success": False, "error": str(e)}
+
 
