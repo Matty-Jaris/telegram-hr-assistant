@@ -233,4 +233,53 @@ async def ask_stream(request: StreamedQuestionRequest):
         print("❌ Chyba ve streamu:", e)
         return {"success": False, "error": str(e)}
 
+from fastapi import Body
+
+@app.post("/say_stream")
+async def say_stream(
+    chat_id: str = Body(...),
+    message_id: int = Body(...),
+    text: str = Body(...)
+):
+    try:
+        # Telegram API setup
+        TELEGRAM_TOKEN = os.getenv("TELEGRAM_API_TOKEN")
+        TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/editMessageText"
+
+        full_message = ""
+        previous = ""
+        import time
+        last_sent = time.time()
+
+        # Rozsekání textu po slovech (můžeš změnit na znaky)
+        chunks = text.split(" ")
+
+        for chunk in chunks:
+            full_message += chunk + " "
+
+            if full_message.strip() == previous.strip():
+                continue
+            if time.time() - last_sent < 0.12:
+                continue
+
+            previous = full_message
+            last_sent = time.time()
+
+            print("🧩 Sending:", full_message)
+
+            res = requests.post(TELEGRAM_API, data={
+                "chat_id": chat_id,
+                "message_id": message_id,
+                "text": full_message.strip()
+            })
+
+            print("📨 Telegram:", res.status_code, res.text)
+
+        return JSONResponse(content={"success": True})
+
+    except Exception as e:
+        print("❌ Chyba ve streamu:", e)
+        return {"success": False, "error": str(e)})
+
+
 
