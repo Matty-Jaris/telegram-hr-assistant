@@ -191,9 +191,17 @@ async def ask_stream(request: StreamedQuestionRequest):
 
         full_message = ""
 
+        previous = ""
+
         for chunk in response:
-            if delta := chunk.choices[0].delta.get("content"):
+            if hasattr(chunk.choices[0].delta, "content"):
+                delta = chunk.choices[0].delta.content
                 full_message += delta
+
+                if full_message.strip() == previous.strip():
+                    continue
+
+                previous = full_message
 
                 print("🧩 Sending:", full_message)
 
@@ -206,11 +214,10 @@ async def ask_stream(request: StreamedQuestionRequest):
                 print("📨 Telegram:", res.status_code, res.text)
 
 
+
         return JSONResponse(content={"success": True})
 
     except Exception as e:
         print("❌ Chyba ve streamu:", e)
         return {"success": False, "error": str(e)}
-    
-    print("✅ TELEGRAM_TOKEN:", TELEGRAM_TOKEN[:10], "...")
 
