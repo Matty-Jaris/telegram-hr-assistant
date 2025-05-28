@@ -8,9 +8,7 @@ from datetime import datetime
 import requests
 from fastapi.responses import JSONResponse
 from rag.query_from_pinecone import retrieve_answer
-
-
-
+from fastapi import Body
 
 
 app = FastAPI()
@@ -179,61 +177,43 @@ from rag.query_from_pinecone import retrieve_answer  # přidej nahoru k ostatní
 @app.post("/ask_stream")
 async def ask_stream(request: StreamedQuestionRequest):
     try:
-        # ⬅️ Získání kontextu z FAQ (RAG)
-        faq_context = retrieve_answer(request.question)
-        if not faq_context:
-            faq_context = ""  # Fallback pro případ None
-
-        # 🔁 Příprava streamovaného požadavku na OpenAI
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": faq_context},
-                {"role": "user", "content": request.question}
-            ],
-            stream=True
-        )
+        # ✅ Získání odpovědi z RAG (už hotové)
+        answer = retrieve_answer(request.question)
+        if not answer:
+            answer = "Omlouvám se, tuto otázku zatím nemám zodpovězenou."
 
         # 📬 Telegram API
         TELEGRAM_TOKEN = os.getenv("TELEGRAM_API_TOKEN")
         TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/editMessageText"
 
+        # 📤 Rozsekání odpovědi a streamování
         full_message = ""
         previous = ""
         import time
         last_sent = time.time()
+        words = answer.split(" ")
 
-        for chunk in response:
-            if hasattr(chunk.choices[0].delta, "content"):
-                delta = chunk.choices[0].delta.content
-                full_message += delta
+        for word in words:
+            full_message += word + " "
+            if full_message.strip() == previous.strip() or time.time() - last_sent < 0.12:
+                continue
+            previous = full_message
+            last_sent = time.time()
 
-                # 🛡 Přeskakuj stejné nebo příliš časté zprávy
-                if full_message.strip() == previous.strip():
-                    continue
-                if time.time() - last_sent < 0.15:
-                    continue
-
-                previous = full_message
-                last_sent = time.time()
-
-                print("🧩 Sending:", full_message)
-
-                res = requests.post(TELEGRAM_API, data={
-                    "chat_id": request.chat_id,
-                    "message_id": request.message_id,
-                    "text": full_message
-                })
-
-                print("📨 Telegram:", res.status_code, res.text)
+            res = requests.post(TELEGRAM_API, json={
+                "chat_id": request.chat_id,
+                "message_id": request.message_id,
+                "text": full_message.strip()
+            })
+            print("🧩 Sent chunk:", full_message.strip())
+            print("📨 Telegram:", res.status_code, res.text)
 
         return JSONResponse(content={"success": True})
 
     except Exception as e:
         print("❌ Chyba ve streamu:", e)
-        return {"success": False, "error": str(e)}
+        return {"success": False, "error": str(e)})
 
-from fastapi import Body
 
 @app.post("/say_stream")
 async def say_stream(
@@ -246,27 +226,23 @@ async def say_stream(
         TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/editMessageText"
 
         full_message = ""
-        previous = ""
         import time
-        last_sent = 0  # nastaveno na 0, aby se první zpráva odeslala ihned
+        last_sent = 0
+        previous_length = 0
 
-        chunks = text.split(" ")
+        words = text.split(" ")
 
-        for chunk in chunks:
-            full_message += chunk + " "
+        for word in words:
+            full_message += word + " "
 
-            # Přeskoč prázdný obsah
-            if len(full_message.strip()) == 0:
+            # Posílej jen když se délka změnila a uteklo dost času
+            if len(full_message.strip()) == previous_length:
+                continue
+            if time.time() - last_sent < 0.12:
                 continue
 
-            # Pokud se text nezměnil nebo je příliš brzo, přeskoč
-            if full_message.strip() == previous.strip() or (time.time() - last_sent) < 0.12:
-                continue
-
-            previous = full_message
+            previous_length = len(full_message.strip())
             last_sent = time.time()
-
-            print("🧩 Sending:", full_message.strip())
 
             res = requests.post(TELEGRAM_API, json={
                 "chat_id": chat_id,
@@ -274,17 +250,15 @@ async def say_stream(
                 "text": full_message.strip()
             })
 
-            print("📨 Telegram Response:", res.status_code, res.text)
-
-            # Pokud dojde k chybě z Telegram API, vypíše se
-            if res.status_code != 200:
-                print("❌ Chyba Telegram API:", res.text)
+            print("🧩 Sent chunk:", full_message.strip())
+            print("📨 Telegram:", res.status_code, res.text)
 
         return JSONResponse(content={"success": True})
 
     except Exception as e:
         print("❌ Chyba ve streamu:", e)
-        return {"success": False, "error": str(e)}
+        return {"success": False, "error": str(e)})
+
 
 
 
