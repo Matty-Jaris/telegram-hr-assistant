@@ -179,8 +179,13 @@ async def ask_stream(request: StreamedQuestionRequest):
     try:
         # ✅ Získání odpovědi z RAG (už hotové)
         answer = retrieve_answer(request.question)
-        if not answer:
-            answer = "Omlouvám se, tuto otázku zatím nemám zodpovězenou."
+        print("🟢 RAG odpověď:", answer)
+        if not answer or len(answer.strip()) < 10:
+            answer = "Omlouvám se, zatím k této otázce nemám odpověď ve FAQ."
+
+        # answer = retrieve_answer(request.question)
+        # if not answer:
+        #     answer = "Omlouvám se, tuto otázku zatím nemám zodpovězenou."
 
         # 📬 Telegram API
         TELEGRAM_TOKEN = os.getenv("TELEGRAM_API_TOKEN")
