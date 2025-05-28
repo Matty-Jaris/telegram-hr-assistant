@@ -242,38 +242,43 @@ async def say_stream(
     text: str = Body(...)
 ):
     try:
-        # Telegram API setup
         TELEGRAM_TOKEN = os.getenv("TELEGRAM_API_TOKEN")
         TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/editMessageText"
 
         full_message = ""
         previous = ""
         import time
-        last_sent = time.time()
+        last_sent = 0  # nastaveno na 0, aby se první zpráva odeslala ihned
 
-        # Rozsekání textu po slovech (můžeš změnit na znaky)
         chunks = text.split(" ")
 
         for chunk in chunks:
             full_message += chunk + " "
 
-            if full_message.strip() == previous.strip():
+            # Přeskoč prázdný obsah
+            if len(full_message.strip()) == 0:
                 continue
-            if time.time() - last_sent < 0.12:
+
+            # Pokud se text nezměnil nebo je příliš brzo, přeskoč
+            if full_message.strip() == previous.strip() or (time.time() - last_sent) < 0.12:
                 continue
 
             previous = full_message
             last_sent = time.time()
 
-            print("🧩 Sending:", full_message)
+            print("🧩 Sending:", full_message.strip())
 
-            res = requests.post(TELEGRAM_API, data={
+            res = requests.post(TELEGRAM_API, json={
                 "chat_id": chat_id,
                 "message_id": message_id,
                 "text": full_message.strip()
             })
 
-            print("📨 Telegram:", res.status_code, res.text)
+            print("📨 Telegram Response:", res.status_code, res.text)
+
+            # Pokud dojde k chybě z Telegram API, vypíše se
+            if res.status_code != 200:
+                print("❌ Chyba Telegram API:", res.text)
 
         return JSONResponse(content={"success": True})
 
