@@ -212,7 +212,7 @@ async def ask_stream(request: StreamedQuestionRequest):
 
     except Exception as e:
         print("❌ Chyba ve streamu:", e)
-        return {"success": False, "error": str(e)})
+        return {"success": False, "error": str(e)}
 
 
 @app.post("/say_stream")
@@ -257,7 +257,7 @@ async def say_stream(
 
     except Exception as e:
         print("❌ Chyba ve streamu:", e)
-        return {"success": False, "error": str(e)})
+        return {"success": False, "error": str(e)}
 
 
 
