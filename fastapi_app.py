@@ -227,42 +227,37 @@ async def say_stream(
     text: str = Body(...)
 ):
     try:
+        import time
         TELEGRAM_TOKEN = os.getenv("TELEGRAM_API_TOKEN")
         TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/editMessageText"
 
-        full_message = ""
-        import time
-        last_sent = 0
-        previous_length = 0
-
         words = text.split(" ")
+        buffer = ""
+        last_sent_time = 0
 
         for word in words:
-            full_message += word + " "
+            buffer += word + " "
 
-            # Posílej jen když se délka změnila a uteklo dost času
-            if len(full_message.strip()) == previous_length:
-                continue
-            if time.time() - last_sent < 0.12:
-                continue
+            if time.time() - last_sent_time < 0.1:
+                continue  # počkej, dokud neuplyne interval
 
-            previous_length = len(full_message.strip())
-            last_sent = time.time()
-
-            res = requests.post(TELEGRAM_API, json={
+            response = requests.post(TELEGRAM_API, json={
                 "chat_id": chat_id,
                 "message_id": message_id,
-                "text": full_message.strip()
+                "text": buffer.strip()
             })
 
-            print("🧩 Sent chunk:", full_message.strip())
-            print("📨 Telegram:", res.status_code, res.text)
+            print("🧩 Sent:", buffer.strip())
+            print("📨 Telegram:", response.status_code, response.text)
+
+            last_sent_time = time.time()
 
         return JSONResponse(content={"success": True})
 
     except Exception as e:
         print("❌ Chyba ve streamu:", e)
-        return {"success": False, "error": str(e)}
+        return {"success": False, "error": str(e)})
+
 
 
 
