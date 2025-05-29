@@ -172,46 +172,34 @@ async def parse_contact_info(request: ContactInfoRequest):
         print("❌ Chyba při parsování kontaktu:", e)
         return {"success": False, "error": str(e)}
 
-from rag.query_from_pinecone import retrieve_answer  # přidej nahoru k ostatním
+
 
 @app.post("/ask_stream")
 async def ask_stream(request: StreamedQuestionRequest):
     try:
-        # ✅ Získání odpovědi z RAG (už hotové)
+        # Získání odpovědi z RAG (už hotové)
         answer = retrieve_answer(request.question)
-        print("🟢 RAG odpověď:", answer)
+        print("🟢 RAG odpověď:", repr(answer))
         if not answer or len(answer.strip()) < 10:
             answer = "Omlouvám se, zatím k této otázce nemám odpověď ve FAQ."
 
-        # answer = retrieve_answer(request.question)
-        # if not answer:
-        #     answer = "Omlouvám se, tuto otázku zatím nemám zodpovězenou."
-
-        # 📬 Telegram API
+        # Telegram API
         TELEGRAM_TOKEN = os.getenv("TELEGRAM_API_TOKEN")
         TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/editMessageText"
 
-        # 📤 Rozsekání odpovědi a streamování
-        full_message = ""
-        previous = ""
-        import time
-        last_sent = time.time()
-        words = answer.split(" ")
-
-        for word in words:
-            full_message += word + " "
-            if full_message.strip() == previous.strip() or time.time() - last_sent < 0.12:
+        last_sent_time = 0
+        for i in range(1, len(answer) + 1):
+            chunk = answer[:i]
+            if time.time() - last_sent_time < 0.07:
                 continue
-            previous = full_message
-            last_sent = time.time()
-
-            res = requests.post(TELEGRAM_API, json={
+            response = requests.post(TELEGRAM_API, json={
                 "chat_id": request.chat_id,
                 "message_id": request.message_id,
-                "text": full_message.strip()
+                "text": chunk
             })
-            print("🧩 Sent chunk:", full_message.strip())
-            print("📨 Telegram:", res.status_code, res.text)
+            print("🧩 Sent chunk:", chunk)
+            print("📨 Telegram:", response.status_code, response.text)
+            last_sent_time = time.time()
 
         return JSONResponse(content={"success": True})
 
@@ -231,25 +219,19 @@ async def say_stream(
         TELEGRAM_TOKEN = os.getenv("TELEGRAM_API_TOKEN")
         TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/editMessageText"
 
-        words = text.split(" ")
-        buffer = ""
         last_sent_time = 0
-
-        for word in words:
-            buffer += word + " "
-
-            if time.time() - last_sent_time < 0.1:
-                continue  # počkej, dokud neuplyne interval
-
+        for i in range(1, len(text) + 1):
+            chunk = text[:i]
+            # Odesílej maximálně 15× za sekundu (0.07s pauza mezi updaty)
+            if time.time() - last_sent_time < 0.07:
+                continue
             response = requests.post(TELEGRAM_API, json={
                 "chat_id": chat_id,
                 "message_id": message_id,
-                "text": buffer.strip()
+                "text": chunk
             })
-
-            print("🧩 Sent:", buffer.strip())
+            print("🧩 Sent:", chunk)
             print("📨 Telegram:", response.status_code, response.text)
-
             last_sent_time = time.time()
 
         return JSONResponse(content={"success": True})
@@ -257,8 +239,3 @@ async def say_stream(
     except Exception as e:
         print("❌ Chyba ve streamu:", e)
         return {"success": False, "error": str(e)}
-
-
-
-
-
