@@ -9,7 +9,7 @@ import requests
 from fastapi.responses import JSONResponse
 from rag.query_from_pinecone import retrieve_answer
 from fastapi import Body
-
+import time
 
 app = FastAPI()
 
@@ -177,6 +177,7 @@ async def parse_contact_info(request: ContactInfoRequest):
 @app.post("/ask_stream")
 async def ask_stream(request: StreamedQuestionRequest):
     try:
+        import time   # ← SEM! (musí být ve funkci)
         # Získání odpovědi z RAG (už hotové)
         answer = retrieve_answer(request.question)
         print("🟢 RAG odpověď:", repr(answer))
@@ -207,7 +208,6 @@ async def ask_stream(request: StreamedQuestionRequest):
         print("❌ Chyba ve streamu:", e)
         return {"success": False, "error": str(e)}
 
-
 @app.post("/say_stream")
 async def say_stream(
     chat_id: str = Body(...),
@@ -215,27 +215,25 @@ async def say_stream(
     text: str = Body(...)
 ):
     try:
-        import time
         TELEGRAM_TOKEN = os.getenv("TELEGRAM_API_TOKEN")
         TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/editMessageText"
 
-        last_sent_time = 0
         for i in range(1, len(text) + 1):
             chunk = text[:i]
-            # Odesílej maximálně 15× za sekundu (0.07s pauza mezi updaty)
-            if time.time() - last_sent_time < 0.07:
-                continue
+
             response = requests.post(TELEGRAM_API, json={
                 "chat_id": chat_id,
                 "message_id": message_id,
                 "text": chunk
             })
+
             print("🧩 Sent:", chunk)
             print("📨 Telegram:", response.status_code, response.text)
-            last_sent_time = time.time()
+            time.sleep(0.07)  # Pauza mezi chunkama = klíčové!
 
         return JSONResponse(content={"success": True})
 
     except Exception as e:
         print("❌ Chyba ve streamu:", e)
         return {"success": False, "error": str(e)}
+
