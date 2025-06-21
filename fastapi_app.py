@@ -177,24 +177,28 @@ async def parse_contact_info(request: ContactInfoRequest):
         print("❌ Chyba při parsování kontaktu:", e)
         return {"success": False, "error": str(e)}
 
+import time
+import httpx
+from fastapi import BackgroundTasks
+
 @app.post("/ask_stream")
 async def ask_stream(request: StreamedQuestionRequest, background_tasks: BackgroundTasks):
     TELEGRAM_TOKEN = os.getenv("TELEGRAM_API_TOKEN")
     TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/editMessageText"
 
     def stream_sync(answer_text, chat_id, message_id):
+        words = answer_text.split()
         response_text = ""
-        with httpx.Client() as client_http:
-            for char in answer_text:
-                response_text += char
+        with httpx.Client(timeout=10.0) as client_http:  # ← Nastavený vyšší timeout!
+            for word in words:
+                response_text += word + " "
                 client_http.post(TELEGRAM_API, json={
                     "chat_id": chat_id,
                     "message_id": message_id,
-                    "text": response_text
+                    "text": response_text.strip()
                 })
-                time.sleep(0.03)  # rychlejší a plynulé psaní po znacích
+                time.sleep(0.1)  # O něco delší pauza mezi requesty (0.1 sec)
 
-    # Nejprve zkus odpovědět z FAQ
     faq_answer = retrieve_answer(request.question)
 
     if faq_answer and len(faq_answer.strip()) > 10:
@@ -202,7 +206,6 @@ async def ask_stream(request: StreamedQuestionRequest, background_tasks: Backgro
     else:
         final_answer = "Omlouvám se, zatím k této otázce nemám odpověď ve FAQ."
 
-    # Spuštění streamování na pozadí
     background_tasks.add_task(
         stream_sync,
         final_answer,
@@ -224,16 +227,17 @@ async def say_stream(
     TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/editMessageText"
 
     def stream_prepared(text, chat_id, message_id):
+        words = text.split()
         response_text = ""
-        with httpx.Client() as client_http:
-            for char in text:
-                response_text += char
+        with httpx.Client(timeout=10.0) as client_http:
+            for word in words:
+                response_text += word + " "
                 client_http.post(TELEGRAM_API, json={
                     "chat_id": chat_id,
                     "message_id": message_id,
-                    "text": response_text
+                    "text": response_text.strip()
                 })
-                time.sleep(0.03)
+                time.sleep(0.1)
 
     background_tasks.add_task(
         stream_prepared, text, chat_id, message_id
