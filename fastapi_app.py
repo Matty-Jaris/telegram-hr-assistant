@@ -182,32 +182,61 @@ async def ask_stream(request: StreamedQuestionRequest, background_tasks: Backgro
     TELEGRAM_TOKEN = os.getenv("TELEGRAM_API_TOKEN")
     TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/editMessageText"
 
-    def stream_openai_sync(question, chat_id, message_id):
+    def stream_sync(answer_text, chat_id, message_id):
         response_text = ""
-        stream = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[{"role": "user", "content": question}],
-            stream=True
-        )
-
         with httpx.Client() as client_http:
-            for chunk in stream:
-                content = chunk.choices[0].delta.content
-                if content:
-                    response_text += content
-                    client_http.post(TELEGRAM_API, json={
-                        "chat_id": chat_id,
-                        "message_id": message_id,
-                        "text": response_text
-                    })
-                    time.sleep(0.05)
+            for char in answer_text:
+                response_text += char
+                client_http.post(TELEGRAM_API, json={
+                    "chat_id": chat_id,
+                    "message_id": message_id,
+                    "text": response_text
+                })
+                time.sleep(0.03)  # rychlejší a plynulé psaní po znacích
 
+    # Nejprve zkus odpovědět z FAQ
+    faq_answer = retrieve_answer(request.question)
+
+    if faq_answer and len(faq_answer.strip()) > 10:
+        final_answer = faq_answer
+    else:
+        final_answer = "Omlouvám se, zatím k této otázce nemám odpověď ve FAQ."
+
+    # Spuštění streamování na pozadí
     background_tasks.add_task(
-        stream_openai_sync, 
-        request.question, 
-        request.chat_id, 
+        stream_sync,
+        final_answer,
+        request.chat_id,
         request.message_id
     )
 
     return {"success": True}
 
+
+@app.post("/say_stream")
+async def say_stream(
+    chat_id: str = Body(...),
+    message_id: int = Body(...),
+    text: str = Body(...),
+    background_tasks: BackgroundTasks = None
+):
+    TELEGRAM_TOKEN = os.getenv("TELEGRAM_API_TOKEN")
+    TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/editMessageText"
+
+    def stream_prepared(text, chat_id, message_id):
+        response_text = ""
+        with httpx.Client() as client_http:
+            for char in text:
+                response_text += char
+                client_http.post(TELEGRAM_API, json={
+                    "chat_id": chat_id,
+                    "message_id": message_id,
+                    "text": response_text
+                })
+                time.sleep(0.03)
+
+    background_tasks.add_task(
+        stream_prepared, text, chat_id, message_id
+    )
+
+    return {"success": True}
