@@ -10,6 +10,10 @@ from fastapi.responses import JSONResponse
 from rag.query_from_pinecone import retrieve_answer
 from fastapi import Body
 import time
+import asyncio
+import httpx
+from fastapi.responses import StreamingResponse
+
 
 app = FastAPI()
 
@@ -172,3 +176,32 @@ async def parse_contact_info(request: ContactInfoRequest):
         print("❌ Chyba při parsování kontaktu:", e)
         return {"success": False, "error": str(e)}
 
+@app.post("/ask_stream")
+async def ask_stream(request: StreamedQuestionRequest):
+    TELEGRAM_TOKEN = os.getenv("TELEGRAM_API_TOKEN")
+    TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/editMessageText"
+
+    async def stream_openai():
+        response_text = ""
+        # Zavoláš OpenAI API s reálným streamem
+        stream = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[{"role": "user", "content": request.question}],
+            stream=True
+        )
+
+        async with httpx.AsyncClient() as client_http:
+            async for chunk in stream:
+                content = chunk.choices[0].delta.content
+                if content:
+                    response_text += content
+                    await client_http.post(TELEGRAM_API, json={
+                        "chat_id": request.chat_id,
+                        "message_id": request.message_id,
+                        "text": response_text
+                    })
+                    await asyncio.sleep(0.05)  # Optimální malá prodleva
+
+    # Vrátíš pouze info o dokončení (není třeba víc)
+    await stream_openai()
+    return JSONResponse(content={"success": True})
