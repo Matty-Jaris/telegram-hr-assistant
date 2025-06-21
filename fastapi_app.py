@@ -226,6 +226,9 @@ async def say_stream(
     TELEGRAM_TOKEN = os.getenv("TELEGRAM_API_TOKEN")
     TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/editMessageText"
 
+    text = text.replace("\\n", "\n")
+
+
     def stream_prepared(text, chat_id, message_id):
         words = text.split()
         response_text = ""
