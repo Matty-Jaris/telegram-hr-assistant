@@ -10,6 +10,7 @@ from fastapi.responses import JSONResponse
 from rag.query_from_pinecone import retrieve_answer
 from fastapi import Body
 import time
+from fastapi import BackgroundTasks
 import asyncio
 import httpx
 from fastapi.responses import StreamingResponse
@@ -177,31 +178,36 @@ async def parse_contact_info(request: ContactInfoRequest):
         return {"success": False, "error": str(e)}
 
 @app.post("/ask_stream")
-async def ask_stream(request: StreamedQuestionRequest):
+async def ask_stream(request: StreamedQuestionRequest, background_tasks: BackgroundTasks):
     TELEGRAM_TOKEN = os.getenv("TELEGRAM_API_TOKEN")
     TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/editMessageText"
 
-    async def stream_openai():
+    def stream_openai_sync(question, chat_id, message_id):
         response_text = ""
-        # Zavoláš OpenAI API s reálným streamem
         stream = client.chat.completions.create(
             model="gpt-4o",
-            messages=[{"role": "user", "content": request.question}],
+            messages=[{"role": "user", "content": question}],
             stream=True
         )
 
-        async with httpx.AsyncClient() as client_http:
-            async for chunk in stream:
+        with httpx.Client() as client_http:
+            for chunk in stream:
                 content = chunk.choices[0].delta.content
                 if content:
                     response_text += content
-                    await client_http.post(TELEGRAM_API, json={
-                        "chat_id": request.chat_id,
-                        "message_id": request.message_id,
+                    client_http.post(TELEGRAM_API, json={
+                        "chat_id": chat_id,
+                        "message_id": message_id,
                         "text": response_text
                     })
-                    await asyncio.sleep(0.05)  # Optimální malá prodleva
+                    time.sleep(0.05)
 
-    # Vrátíš pouze info o dokončení (není třeba víc)
-    await stream_openai()
-    return JSONResponse(content={"success": True})
+    background_tasks.add_task(
+        stream_openai_sync, 
+        request.question, 
+        request.chat_id, 
+        request.message_id
+    )
+
+    return {"success": True}
+
