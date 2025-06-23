@@ -222,21 +222,20 @@ async def say_stream(
     TELEGRAM_TOKEN = os.getenv("TELEGRAM_API_TOKEN")
     TELEGRAM_API   = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/editMessageText"
 
-    # převod escapovaných znaků „\\n“ (přicházejí-li z n8n) na reálné odskoky
-    text = text.replace("\\n", "\n")
-
     def stream_prepared(text, chat_id, message_id):
-        # ① rozdělíme tak, aby se znak '\n' neztratil
-        tokens = re.split(r'(\n)', text)          # => slova + samostatné '\n'
+        # escapované „\\n“ z n8n převedeme na reálné odskoky
+        text = text.replace("\\n", "\n")
+
+        # rozdělíme tak, aby se znak '\n' neztratil
+        tokens = re.findall(r'\n|[^\s]+', text)      # slova + samostatné '\n'
 
         response_text = ""
-        with httpx.Client(timeout=10.0) as http:
+        with httpx.Client(timeout=10.0) as client_http:
             for tok in tokens:
-                # ② pokud je token právě nový řádek, jen ho připojíme,
-                #    jinak připojíme slovo s mezerou
+                # při tokenu '\n' přidáme odřádkování, jinak slovo s mezerou
                 response_text += "\n" if tok == "\n" else f"{tok} "
 
-                http.post(
+                client_http.post(
                     TELEGRAM_API,
                     json={
                         "chat_id":    chat_id,
@@ -244,10 +243,11 @@ async def say_stream(
                         "text":       response_text.rstrip()
                     }
                 )
-                time.sleep(0.1)  # ~8 requestů / s – bezpečné pro Telegram rate-limit
+                time.sleep(0.1)   # stejné tempo dopisování
 
     background_tasks.add_task(stream_prepared, text, chat_id, message_id)
     return {"success": True}
+
 
 
 
