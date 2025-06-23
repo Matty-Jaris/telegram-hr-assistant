@@ -237,7 +237,7 @@ async def say_stream(
                     json={
                         "chat_id":    chat_id,
                         "message_id": message_id,
-                        "text":       resp.rstrip()
+                        "text":       resp.rstrip(),
                     }
                 )
                 time.sleep(0.1)
@@ -250,7 +250,8 @@ async def say_stream(
                         "chat_id":    chat_id,
                         "message_id": message_id,
                         "text":       resp.rstrip(),
-                        "reply_markup": reply_markup          # ← ② klávesnice
+                        "reply_markup": reply_markup,
+                        "parse_mode": "HTML"
                     }
                 )
 
