@@ -9,8 +9,9 @@ import requests
 from fastapi.responses import JSONResponse
 import asyncio
 from fastapi.responses import StreamingResponse
-import re, time, httpx
 from fastapi import Body, BackgroundTasks
+import re, time, httpx, json
+from typing import Optional
 
 
 app = FastAPI()
@@ -217,35 +218,45 @@ async def say_stream(
     chat_id: str = Body(...),
     message_id: int = Body(...),
     text: str = Body(...),
+    reply_markup: Optional[dict] = Body(None),          # ← ① NOVÉ pole (může být None)
     background_tasks: BackgroundTasks = None
 ):
     TELEGRAM_TOKEN = os.getenv("TELEGRAM_API_TOKEN")
     TELEGRAM_API   = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/editMessageText"
 
-    def stream_prepared(text, chat_id, message_id):
-        # escapované „\\n“ z n8n převedeme na reálné odskoky
+    def stream_prepared(text, chat_id, message_id, reply_markup):
         text = text.replace("\\n", "\n")
+        tokens = re.findall(r'\n|[^\s]+', text)
 
-        # rozdělíme tak, aby se znak '\n' neztratil
-        tokens = re.findall(r'\n|[^\s]+', text)      # slova + samostatné '\n'
-
-        response_text = ""
-        with httpx.Client(timeout=10.0) as client_http:
+        resp = ""
+        with httpx.Client(timeout=10) as http:
             for tok in tokens:
-                # při tokenu '\n' přidáme odřádkování, jinak slovo s mezerou
-                response_text += "\n" if tok == "\n" else f"{tok} "
-
-                client_http.post(
+                resp += "\n" if tok == "\n" else f"{tok} "
+                http.post(
                     TELEGRAM_API,
                     json={
                         "chat_id":    chat_id,
                         "message_id": message_id,
-                        "text":       response_text.rstrip()
+                        "text":       resp.rstrip()
                     }
                 )
-                time.sleep(0.1)   # stejné tempo dopisování
+                time.sleep(0.1)
 
-    background_tasks.add_task(stream_prepared, text, chat_id, message_id)
+            # ▶️ KO NE C  – po dopsání pošli ještě jednou celé tělo + tlačítka
+            if reply_markup:
+                http.post(
+                    TELEGRAM_API,
+                    json={
+                        "chat_id":    chat_id,
+                        "message_id": message_id,
+                        "text":       resp.rstrip(),
+                        "reply_markup": reply_markup          # ← ② klávesnice
+                    }
+                )
+
+    background_tasks.add_task(
+        stream_prepared, text, chat_id, message_id, reply_markup
+    )
     return {"success": True}
 
 
