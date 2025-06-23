@@ -7,13 +7,10 @@ from rag.query_from_pinecone import retrieve_answer
 from datetime import datetime
 import requests
 from fastapi.responses import JSONResponse
-from rag.query_from_pinecone import retrieve_answer
-from fastapi import Body
-import time
-from fastapi import BackgroundTasks
 import asyncio
-import httpx
 from fastapi.responses import StreamingResponse
+import re, time, httpx
+from fastapi import Body, BackgroundTasks
 
 
 app = FastAPI()
@@ -215,7 +212,6 @@ async def ask_stream(request: StreamedQuestionRequest, background_tasks: Backgro
 
     return {"success": True}
 
-
 @app.post("/say_stream")
 async def say_stream(
     chat_id: str = Body(...),
@@ -224,27 +220,64 @@ async def say_stream(
     background_tasks: BackgroundTasks = None
 ):
     TELEGRAM_TOKEN = os.getenv("TELEGRAM_API_TOKEN")
-    TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/editMessageText"
+    TELEGRAM_API   = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/editMessageText"
 
-    text = text.replace("\\n", "\n").replace("\r\n", "\n")
-
-
+    # převod escapovaných znaků „\\n“ (přicházejí-li z n8n) na reálné odskoky
+    text = text.replace("\\n", "\n")
 
     def stream_prepared(text, chat_id, message_id):
-        words = text.split()
+        # ① rozdělíme tak, aby se znak '\n' neztratil
+        tokens = re.split(r'(\n)', text)          # => slova + samostatné '\n'
+
         response_text = ""
-        with httpx.Client(timeout=10.0) as client_http:
-            for word in words:
-                response_text += word + " "
-                client_http.post(TELEGRAM_API, json={
-                    "chat_id": chat_id,
-                    "message_id": message_id,
-                    "text": response_text.strip()
-                })
-                time.sleep(0.1)
+        with httpx.Client(timeout=10.0) as http:
+            for tok in tokens:
+                # ② pokud je token právě nový řádek, jen ho připojíme,
+                #    jinak připojíme slovo s mezerou
+                response_text += "\n" if tok == "\n" else f"{tok} "
 
-    background_tasks.add_task(
-        stream_prepared, text, chat_id, message_id
-    )
+                http.post(
+                    TELEGRAM_API,
+                    json={
+                        "chat_id":    chat_id,
+                        "message_id": message_id,
+                        "text":       response_text.rstrip()
+                    }
+                )
+                time.sleep(0.1)  # ~8 requestů / s – bezpečné pro Telegram rate-limit
 
+    background_tasks.add_task(stream_prepared, text, chat_id, message_id)
     return {"success": True}
+
+
+
+
+# @app.post("/say_stream")
+# async def say_stream(
+#     chat_id: str = Body(...),
+#     message_id: int = Body(...),
+#     text: str = Body(...),
+#     background_tasks: BackgroundTasks = None
+# ):
+#     TELEGRAM_TOKEN = os.getenv("TELEGRAM_API_TOKEN")
+#     TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/editMessageText"
+
+
+#     def stream_prepared(text, chat_id, message_id):
+#         words = text.split()
+#         response_text = ""
+#         with httpx.Client(timeout=10.0) as client_http:
+#             for word in words:
+#                 response_text += word + " "
+#                 client_http.post(TELEGRAM_API, json={
+#                     "chat_id": chat_id,
+#                     "message_id": message_id,
+#                     "text": response_text.strip()
+#                 })
+#                 time.sleep(0.1)
+
+#     background_tasks.add_task(
+#         stream_prepared, text, chat_id, message_id
+#     )
+
+#     return {"success": True}
