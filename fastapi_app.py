@@ -238,6 +238,7 @@ async def say_stream(
                         "chat_id":    chat_id,
                         "message_id": message_id,
                         "text":       resp.rstrip(),
+                         "parse_mode": "HTML"
                     }
                 )
                 time.sleep(0.1)
