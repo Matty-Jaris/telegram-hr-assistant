@@ -226,41 +226,100 @@ async def say_stream(
     TELEGRAM_API   = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/editMessageText"
 
     def stream_prepared(text, chat_id, message_id, reply_markup):
-        text = text.replace("\\n", "\n")
-        tokens = re.findall(r'\n|[^\s]+', text)
+    text   = text.replace("\\n", "\n")
+    tokens = re.findall(r'\n|[^\s]+', text)
 
     MAX_CHARS   = 25          # ⬅️  sem napiš, kolik znaků (=2-3 slova) chceš poslat v jednom chunku
     DELAY       = 0.05        # ⬅️  pauza mezi odeslanými chunky (Telegram limit ~0.03 s)
 
-        resp = ""
-        with httpx.Client(timeout=10) as http:
-            for tok in tokens:
-                resp += "\n" if tok == "\n" else f"{tok} "
-                http.post(
-                    TELEGRAM_API,
-                    json={
-                        "chat_id":    chat_id,
-                        "message_id": message_id,
-                        "text":       resp.rstrip(),
-                         "parse_mode": "HTML"
-                    }
-                )
-                time.sleep(0.1)
+    resp          = ""
+    last_sent_len = 0
 
-            # ▶️ KO NE C  – po dopsání pošli ještě jednou celé tělo + tlačítka
-            if reply_markup:
+    with httpx.Client(timeout=10) as http:
+        for tok in tokens:
+            resp += "\n" if tok == "\n" else f"{tok} "
+
+            # === kdy odeslat? ===
+            chunk_ready = tok == "\n" or (len(resp) - last_sent_len) >= MAX_CHARS
+            if chunk_ready:
                 http.post(
                     TELEGRAM_API,
                     json={
                         "chat_id":    chat_id,
                         "message_id": message_id,
                         "text":       resp.rstrip(),
-                        "reply_markup": reply_markup,
                         "parse_mode": "HTML"
                     }
                 )
+                last_sent_len = len(resp)
+                time.sleep(DELAY)
+
+        # finální push + případná klávesnice
+        if reply_markup:
+            http.post(
+                TELEGRAM_API,
+                json={
+                    "chat_id":    chat_id,
+                    "message_id": message_id,
+                    "text":       resp.rstrip(),
+                    "reply_markup": reply_markup,
+                    "parse_mode": "HTML"
+                }
+            )
 
     background_tasks.add_task(
         stream_prepared, text, chat_id, message_id, reply_markup
     )
     return {"success": True}
+
+
+# @app.post("/say_stream")
+# async def say_stream(
+#     chat_id: str = Body(...),
+#     message_id: int = Body(...),
+#     text: str = Body(...),
+#     reply_markup: Optional[dict] = Body(None),          # ← ① NOVÉ pole (může být None)
+#     background_tasks: BackgroundTasks = None
+# ):
+#     TELEGRAM_TOKEN = os.getenv("TELEGRAM_API_TOKEN")
+#     TELEGRAM_API   = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/editMessageText"
+
+#     def stream_prepared(text, chat_id, message_id, reply_markup):
+#         text = text.replace("\\n", "\n")
+#         tokens = re.findall(r'\n|[^\s]+', text)
+
+#         resp = ""
+#         with httpx.Client(timeout=10) as http:
+#             for tok in tokens:
+#                 resp += "\n" if tok == "\n" else f"{tok} "
+#                 http.post(
+#                     TELEGRAM_API,
+#                     json={
+#                         "chat_id":    chat_id,
+#                         "message_id": message_id,
+#                         "text":       resp.rstrip(),
+#                          "parse_mode": "HTML"
+#                     }
+#                 )
+#                 time.sleep(0.1)
+
+#             # ▶️ KO NE C  – po dopsání pošli ještě jednou celé tělo + tlačítka
+#             if reply_markup:
+#                 http.post(
+#                     TELEGRAM_API,
+#                     json={
+#                         "chat_id":    chat_id,
+#                         "message_id": message_id,
+#                         "text":       resp.rstrip(),
+#                         "reply_markup": reply_markup,
+#                         "parse_mode": "HTML"
+#                     }
+#                 )
+
+#     background_tasks.add_task(
+#         stream_prepared, text, chat_id, message_id, reply_markup
+#     )
+#     return {"success": True}
+
+
+
