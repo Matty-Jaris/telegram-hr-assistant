@@ -213,42 +213,41 @@ async def ask_stream(request: StreamedQuestionRequest, background_tasks: Backgro
 
     return {"success": True}
 
+
 @app.post("/say_stream")
 async def say_stream(
     chat_id: str = Body(...),
     message_id: int = Body(...),
     text: str = Body(...),
-    reply_markup: Optional[dict] = Body(None),
+    reply_markup: Optional[dict] = Body(None),          # ← ① NOVÉ pole (může být None)
     background_tasks: BackgroundTasks = None
 ):
     TELEGRAM_TOKEN = os.getenv("TELEGRAM_API_TOKEN")
     TELEGRAM_API   = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/editMessageText"
 
     def stream_prepared(text, chat_id, message_id, reply_markup):
-        # 1) escapované \\n -> reálné \n
         text = text.replace("\\n", "\n")
+        tokens = re.findall(r'\n|[^\s]+', text)
 
-        # 2) rozdělíme na odstavce (podle dvojitého odřádkování)
-        paragraphs = text.split("\n\n")
+    MAX_CHARS   = 25          # ⬅️  sem napiš, kolik znaků (=2-3 slova) chceš poslat v jednom chunku
+    DELAY       = 0.05        # ⬅️  pauza mezi odeslanými chunky (Telegram limit ~0.03 s)
 
         resp = ""
         with httpx.Client(timeout=10) as http:
-            for para in paragraphs:
-                # připojíme odstavec a jednu prázdnou řádku
-                resp += para + "\n\n"
-
+            for tok in tokens:
+                resp += "\n" if tok == "\n" else f"{tok} "
                 http.post(
                     TELEGRAM_API,
                     json={
                         "chat_id":    chat_id,
                         "message_id": message_id,
                         "text":       resp.rstrip(),
-                        "parse_mode": "HTML"
+                         "parse_mode": "HTML"
                     }
                 )
-                time.sleep(0.4)          # pauza mezi odstavci (lze zkrátit/prodloužit)
+                time.sleep(0.1)
 
-            # 3) po dopsání přidáme klávesnici, pokud je
+            # ▶️ KO NE C  – po dopsání pošli ještě jednou celé tělo + tlačítka
             if reply_markup:
                 http.post(
                     TELEGRAM_API,
@@ -265,54 +264,3 @@ async def say_stream(
         stream_prepared, text, chat_id, message_id, reply_markup
     )
     return {"success": True}
-
-
-
-# Předposlední verze
-# @app.post("/say_stream")
-# async def say_stream(
-#     chat_id: str = Body(...),
-#     message_id: int = Body(...),
-#     text: str = Body(...),
-#     reply_markup: Optional[dict] = Body(None),          # ← ① NOVÉ pole (může být None)
-#     background_tasks: BackgroundTasks = None
-# ):
-#     TELEGRAM_TOKEN = os.getenv("TELEGRAM_API_TOKEN")
-#     TELEGRAM_API   = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/editMessageText"
-
-#     def stream_prepared(text, chat_id, message_id, reply_markup):
-#         text = text.replace("\\n", "\n")
-#         tokens = re.findall(r'\n|[^\s]+', text)
-
-#         resp = ""
-#         with httpx.Client(timeout=10) as http:
-#             for tok in tokens:
-#                 resp += "\n" if tok == "\n" else f"{tok} "
-#                 http.post(
-#                     TELEGRAM_API,
-#                     json={
-#                         "chat_id":    chat_id,
-#                         "message_id": message_id,
-#                         "text":       resp.rstrip(),
-#                          "parse_mode": "HTML"
-#                     }
-#                 )
-#                 time.sleep(0.1)
-
-#             # ▶️ KO NE C  – po dopsání pošli ještě jednou celé tělo + tlačítka
-#             if reply_markup:
-#                 http.post(
-#                     TELEGRAM_API,
-#                     json={
-#                         "chat_id":    chat_id,
-#                         "message_id": message_id,
-#                         "text":       resp.rstrip(),
-#                         "reply_markup": reply_markup,
-#                         "parse_mode": "HTML"
-#                     }
-#                 )
-
-#     background_tasks.add_task(
-#         stream_prepared, text, chat_id, message_id, reply_markup
-#     )
-#     return {"success": True}
