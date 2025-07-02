@@ -1,11 +1,11 @@
 [
   {
     "question": "Kdy můžete nastoupit?",
-    "answer": "Můžu nastoupit od 1. července 2025, nebo dle dohody po dvouměsíční výpovědi."
+    "answer": "Můžu nastoupit kdykoliv dle dohody po dvouměsíční výpovědi."
   },
   {
-    "question": "Jaké jsou vaše platové očekávání?",
-    "answer": "Preferuji férové ohodnocení odpovídající juniorní pozici v Praze (orientačně 50 000 – 60 000 Kč brutto), ale jsem otevřen diskusi podle rozsahu zodpovědností."
+  "question": "Jaké jsou vaše platové očekávání?",
+  "answer": "Preferuji férové ohodnocení odpovídající juniorní pozici v Praze. Orientačně očekávám 55 000 až 60 000 Kč měsíčně při fakturaci jako OSVČ, což zhruba odpovídá hrubé mzdě 40 000 až 45 000 Kč na HPP. Takové nastavení mi přijde férové pro obě strany – zaměstnavatele i mě. Samozřejmě jsem otevřen diskusi podle konkrétní pracovní náplně a míry zodpovědnosti."
   },
   {
     "question": "Preferujete práci na dálku nebo v kanceláři?",
@@ -32,7 +32,7 @@
     "answer": "Martin Jarábek je juniorní vývojář se zaměřením na Python, FastAPI a webové technologie. Má více než 10 let zkušeností s prací s lidmi jako učitel a do IT přináší výborné komunikační schopnosti, systematičnost a touhu zjednodušovat složité věci pomocí automatizace. Aktivně tvoří projekty jako například svého Telegram asistenta a aplikaci na počasí. Je pečlivý, spolehlivý a dobře organizovaný."
   },
   {
-    "question": "Jak by si představil Martin",
+    "question": "Jak by si představil Martina",
     "answer": "Martin Jarábek je juniorní vývojář se zaměřením na Python, FastAPI a webové technologie. Má více než 10 let zkušeností s prací s lidmi jako učitel a do IT přináší výborné komunikační schopnosti, systematičnost a touhu zjednodušovat složité věci pomocí automatizace. Aktivně tvoří projekty jako například svého Telegram asistenta a aplikaci na počasí. Je pečlivý, spolehlivý a dobře organizovaný."
   },
   {
@@ -114,5 +114,29 @@
   {
     "question": "Umíš komunikovat v týmu?",
     "answer": "Ano – mám za sebou 11 let práce s lidmi jako učitel, takže vím, jak důležitá je jasná komunikace, zpětná vazba a respekt. Snažím se být spolehlivý, vstřícný a hledat řešení, ne problémy. Při vývoji jsem zvyklý zapisovat poznámky, používat komentáře a strukturovat práci tak, aby byla čitelná i pro ostatní."
+  },
+  {
+    "question": "Díky moc",
+    "answer": "Rádo se stalo! Přeji hezký den a těším se na případnou spolupráci. 👋"
+  },
+  {
+    "question": "Děkuji",
+    "answer": "Rádo se stalo! Přeji hezký den a těším se na případnou spolupráci. 👋"
+  },
+  {
+    "question": "Nashledanou",
+    "answer": "Na shledanou – děkuji za zprávu a přeji příjemný den! 👋"
+  },
+  {
+    "question": "Kdo jsi?",
+    "answer": "Jsem personální asistent Martina Jarábka. Rád vám pomohu:\n– odpovědět na otázky ohledně Martina\n– poslat vám Martinovo CV\n– domluvit pohovor / krátký call"
+  },
+  {
+    "question": "Kdo jsi ty?",
+    "answer": "Jsem personální asistent Martina Jarábka. Rád vám pomohu:\n– odpovědět na otázky ohledně Martina\n– poslat vám Martinovo CV\n– domluvit pohovor / krátký call"
+  },
+  {
+    "question": "Představ se",
+    "answer": "Jsem personální asistent Martina Jarábka. Rád vám pomohu:\n– odpovědět na otázky ohledně Martina\n– poslat vám Martinovo CV\n– domluvit pohovor / krátký call"
   }
 ]
