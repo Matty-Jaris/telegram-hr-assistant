@@ -185,36 +185,36 @@ async def ask_stream(request: StreamedQuestionRequest, background_tasks: Backgro
     TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/editMessageText"
     import re                                       # přidej na začátek souboru
 
-    def stream_sync(answer_text, chat_id, message_id):
-        answer_text = answer_text.replace("\\n", "\n")          # escapované → reálné
-        tokens = re.findall(r'\n|[^\s]+', answer_text)          # ← hlavní změna
-
-        response_text = ""
-        with httpx.Client(timeout=10.0) as client_http:
-            for tok in tokens:
-                response_text += "\n" if tok == "\n" else f"{tok} "
-                client_http.post(
-                    TELEGRAM_API,
-                    json={
-                        "chat_id":    chat_id,
-                        "message_id": message_id,
-                        "text":       response_text.rstrip()
-                    }
-                )
-                time.sleep(0.1)
-
     # def stream_sync(answer_text, chat_id, message_id):
-    #     words = answer_text.split()
+    #     answer_text = answer_text.replace("\\n", "\n")          # escapované → reálné
+    #     tokens = re.findall(r'\n|[^\s]+', answer_text)          # ← hlavní změna
+
     #     response_text = ""
-    #     with httpx.Client(timeout=10.0) as client_http:  # ← Nastavený vyšší timeout!
-    #         for word in words:
-    #             response_text += word + " "
-    #             client_http.post(TELEGRAM_API, json={
-    #                 "chat_id": chat_id,
-    #                 "message_id": message_id,
-    #                 "text": response_text.strip()
-    #             })
-    #             time.sleep(0.1)  # O něco delší pauza mezi requesty (0.1 sec)
+    #     with httpx.Client(timeout=10.0) as client_http:
+    #         for tok in tokens:
+    #             response_text += "\n" if tok == "\n" else f"{tok} "
+    #             client_http.post(
+    #                 TELEGRAM_API,
+    #                 json={
+    #                     "chat_id":    chat_id,
+    #                     "message_id": message_id,
+    #                     "text":       response_text.rstrip()
+    #                 }
+    #             )
+    #             time.sleep(0.1)
+
+    def stream_sync(answer_text, chat_id, message_id):
+        words = answer_text.split()
+        response_text = ""
+        with httpx.Client(timeout=10.0) as client_http:  # ← Nastavený vyšší timeout!
+            for word in words:
+                response_text += word + " "
+                client_http.post(TELEGRAM_API, json={
+                    "chat_id": chat_id,
+                    "message_id": message_id,
+                    "text": response_text.strip()
+                })
+                time.sleep(0.1)  # O něco delší pauza mezi requesty (0.1 sec)
 
     faq_answer = retrieve_answer(request.question)
 
