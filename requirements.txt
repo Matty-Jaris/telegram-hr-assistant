@@ -2,7 +2,8 @@ fastapi
 chromadb
 openai
 python-dotenv
-openai
 pinecone
 uvicorn
-
+airtable-python-wrapper
+httpx
+pydantic
