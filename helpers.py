@@ -2,6 +2,14 @@ import openai, os, re, json
 from airtable import Airtable
 from rag.query_from_pinecone import retrieve_answer
 from datetime import datetime
+from dotenv import load_dotenv
+load_dotenv()
+
+import os
+print("DEBUG: OPENAI_API_KEY:", os.getenv("OPENAI_API_KEY"))
+print("DEBUG: AIRTABLE_BASE:", os.getenv("AIRTABLE_BASE"))
+print("DEBUG: AIRTABLE_TOKEN:", os.getenv("AIRTABLE_TOKEN"))
+
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 airtable = Airtable(os.getenv("AIRTABLE_BASE"), "HR Assistant Logs", os.getenv("AIRTABLE_TOKEN"))
