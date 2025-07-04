@@ -52,6 +52,7 @@ async def parse_contact_info(payload: SimpleMessage):
     success, info = parse_contact(payload.message)
     return {"success": success, **info}
 
-@router.get("/send_cv")
-async def send_cv():
-    return {"cv_url": "/chatbot_api/source_materials/Resume_2025.pdf"}
+from fastapi.responses import FileResponse
+
+
+

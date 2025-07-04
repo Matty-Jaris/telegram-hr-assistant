@@ -24,10 +24,32 @@ def extract_datetime(message):
     return (term != "NEPLATNÉ", term if term != "NEPLATNÉ" else None)
 
 def parse_contact(message):
-    prompt = "Extrahuj kontaktní údaje jako JSON: {\"name\":\"...\", \"phone\":\"...\", \"email\":\"...\"}"
-    response = openai.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": prompt + message}], temperature=0)
-    data = json.loads(response.choices[0].message.content.strip())
-    return True, data
+    prompt = (
+        "Z následující zprávy extrahuj jméno, email a telefonní číslo. "
+        "Vrať pouze validní JSON ve formátu: "
+        '{"name": "...", "email": "...", "phone": "..."}\n'
+        "Nevypisuj žádné další komentáře, pouze JSON!"
+        f"\nZpráva: {message}"
+    )
+    response = openai.chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0,
+        max_tokens=100
+    )
+    content = response.choices[0].message.content.strip()
+    try:
+        # Najdi JSON v odpovědi (pro jistotu vyber první {...})
+        import re, json
+        match = re.search(r"\{.*\}", content, re.DOTALL)
+        if not match:
+            return False, {}
+        data = json.loads(match.group(0))
+        return True, data
+    except Exception as e:
+        print("Chyba při parsování kontaktu:", content, e)
+        return False, {}
+
 
 def log_to_airtable(chat_id, question, answer, category):
     airtable.insert({"Chat ID": chat_id, "Question": question, "Answer": answer, "Category": category, "Timestamp": datetime.now().isoformat()})

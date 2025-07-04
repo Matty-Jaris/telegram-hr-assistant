@@ -2,6 +2,7 @@ from fastapi import FastAPI, Body
 from pydantic import BaseModel
 from helpers import detect_intent, extract_datetime, parse_contact, get_faq_answer, log_to_airtable
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 
 app = FastAPI()
 session_state = {}  # Na produkci raději Redis!
@@ -37,7 +38,6 @@ async def chat_handler(req: ChatRequest):
     if state.get("waiting_for_contact"):
         success, info = parse_contact(msg)
         if success:
-            # Zde uložení do Airtable (termín, kontakty, status = confirmed)
             meeting_time = state.get("meeting_time", "")
             log_to_airtable(
                 chat_id=sid,
@@ -45,7 +45,6 @@ async def chat_handler(req: ChatRequest):
                 answer=f"{info}",
                 category="MEETING"
             )
-            # Shrnutí + možnost opravit kontakty
             session_state[sid] = {
                 "confirmed": True,
                 "meeting_time": meeting_time,
@@ -104,8 +103,8 @@ async def chat_handler(req: ChatRequest):
         return {"reply": "Skvěle! Navrhněte prosím konkrétní termín schůzky (datum a čas)."}
 
     elif intent == "CV":
-        # Můžeš poslat odkaz nebo stáhnout přes /chatbot_api/send_cv
-        return {"reply": "Tady je mé CV: [Zobrazit CV](https://tvuj-web.cz/cv.pdf)"}
+        # Odpověď s odkazem na stažení souboru
+        return {"reply": "Tady je mé CV:\n- [Zobrazit CV](https://telegram-hr-assistant-9i1t.onrender.com/cv)\n- [Stáhnout CV](https://telegram-hr-assistant-9i1t.onrender.com/cv)"}
 
     elif intent == "FAQ":
         answer = get_faq_answer(msg)
@@ -124,3 +123,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/cv")
+async def get_cv():
+    file_path = "source_materials/Resume_2025.pdf"
+    return FileResponse(
+        path=file_path,
+        filename="martin-jarabek-cv.pdf",
+        media_type="application/pdf"
+    )
