@@ -24,7 +24,7 @@ async def chat_handler(req: ChatRequest):
         if "potvr" in text or "ano" in text:
             session_state[sid]["waiting_for_contact"] = True
             session_state[sid].pop("waiting_for_confirmation", None)
-            return {"reply": f"Skvěle! Pro potvrzení mi prosím napište své jméno, email a telefon. (GDPR: Údaje slouží pouze ke kontaktování ohledně schůzky.)"}
+            return {"reply": f"Skvěle! Pro potvrzení mi prosím napište své jméno, email a telefon (GDPR: Údaje slouží pouze ke kontaktování ohledně schůzky.)"}
         elif "jiný" in text or "znovu" in text or "změnit" in text:
             session_state[sid] = {"waiting_for_date": True}
             return {"reply": "Navrhněte prosím nový termín schůzky (datum a čas)."}
@@ -43,7 +43,8 @@ async def chat_handler(req: ChatRequest):
                 chat_id=sid,
                 question=f"Schůzka {meeting_time}",
                 answer=f"{info}",
-                category="MEETING"
+                category="MEETING",
+                term=meeting_time
             )
             session_state[sid] = {
                 "confirmed": True,
@@ -100,11 +101,17 @@ async def chat_handler(req: ChatRequest):
     intent = detect_intent(msg)
     if intent == "MEETING":
         session_state[sid] = {"waiting_for_date": True}
-        return {"reply": "Skvěle! Navrhněte prosím konkrétní termín schůzky (datum a čas)."}
+        return {"reply": "Rád se s vámi domluvím na schůzce/videohovoru.\\n\\nJelikož jsou právě letní prázniny jsem časově velmi flexibilní. Stačí, když mi napíšete den a čas, který vám vyhovuje,\\nnapř. „úterý 3.6.2025 v 15:30“ a můžeme spolu domluvit a potvrdit schůzku."}
 
     elif intent == "CV":
-        # Odpověď s odkazem na stažení souboru
-        return {"reply": "Tady je mé CV:\n- [Zobrazit CV](https://telegram-hr-assistant-9i1t.onrender.com/cv)\n- [Stáhnout CV](https://telegram-hr-assistant-9i1t.onrender.com/cv)"}
+    # HTML odpověď – odkaz otevře PDF v novém okně
+    return {
+        "reply": (
+            'Tady je mé CV:<br>'
+            '<a href="https://telegram-hr-assistant-9i1t.onrender.com/cv" target="_blank" rel="noopener">Zobrazit CV</a> '
+            'nebo <a href="https://telegram-hr-assistant-9i1t.onrender.com/cv" target="_blank" rel="noopener" download>Stáhnout CV</a>'
+        )
+    }
 
     elif intent == "FAQ":
         answer = get_faq_answer(msg)

@@ -59,5 +59,31 @@ def parse_contact(message):
         return False, {}
 
 
-def log_to_airtable(chat_id, question, answer, category):
-    airtable.insert({"Chat ID": chat_id, "Question": question, "Answer": answer, "Category": category, "Timestamp": datetime.now().isoformat()})
+# def log_to_airtable(chat_id, question, answer, category):
+#     airtable.insert({"Chat ID": chat_id, "Question": question, "Answer": answer, "Category": category, "Timestamp": datetime.now().isoformat()})
+
+
+def log_to_airtable(chat_id, question, answer, category, term=None):
+    # Rozparsuj answer pokud je to dict, jinak nech být
+    try:
+        if isinstance(answer, dict):
+            name = answer.get("name", "")
+            email = answer.get("email", "")
+            phone = answer.get("phone", "")
+        else:
+            name, email, phone = "", "", ""
+        airtable.insert({
+            "Chat ID": str(chat_id),
+            "Question": str(question),
+            "Answer": str(answer),
+            "Category": str(category),
+            "Name": name,
+            "Email": email,
+            "Phone": phone,
+            "Term": term if term else "",
+            "Timestamp": datetime.now().isoformat()
+        })
+    except Exception as e:
+        print("Chyba při logování do Airtable:", e)
+
+
