@@ -31,8 +31,13 @@ async def chat_handler(req: ChatRequest):
         elif "zrušit" in text or "nechci" in text:
             session_state[sid] = {}
             return {"reply": "Dohodnutí schůzky bylo zrušeno. Pokud si to rozmyslíte, napište mi znovu!"}
+        
         else:
-            return {"reply": "Rozumím správně? Odpovězte 'potvrzuji', 'jiný termín' nebo 'zrušit'."}
+        # Nabídni tlačítka!
+            return {
+                "reply": "Rozumím správně? Odpovězte 'potvrzuji', 'jiný termín' nebo 'zrušit'.",
+                "buttons": ["potvrzuji", "jiný termín", "zrušit"]
+            }
 
     # Čekáme na kontaktní údaje
     if state.get("waiting_for_contact"):
@@ -90,9 +95,11 @@ async def chat_handler(req: ChatRequest):
                 "meeting_time": term
             }
             return {
-                "reply":
+                "reply": (
                     f"Zvolil jste termín: {term}.\nPotvrďte, prosím, jestli se Vám tento termín hodí.\n" +
                     "Odpovězte: 'potvrzuji', 'jiný termín' nebo 'zrušit'."
+                ),
+                "buttons": ["potvrzuji", "jiný termín", "zrušit"]
             }
         else:
             return {"reply": "Prosím, napište přesné datum a čas (např. 'Středa 17.7.2024 v 15:00')"}
@@ -104,14 +111,14 @@ async def chat_handler(req: ChatRequest):
         return {"reply": "Rád se s vámi domluvím na schůzce/videohovoru.\\n\\nJelikož jsou právě letní prázniny jsem časově velmi flexibilní. Stačí, když mi napíšete den a čas, který vám vyhovuje,\\nnapř. „úterý 3.6.2025 v 15:30“ a můžeme spolu domluvit a potvrdit schůzku."}
 
     elif intent == "CV":
-    # HTML odpověď – odkaz otevře PDF v novém okně
-    return {
-        "reply": (
-            'Tady je mé CV:<br>'
-            '<a href="https://telegram-hr-assistant-9i1t.onrender.com/cv" target="_blank" rel="noopener">Zobrazit CV</a> '
-            'nebo <a href="https://telegram-hr-assistant-9i1t.onrender.com/cv" target="_blank" rel="noopener" download>Stáhnout CV</a>'
-        )
-    }
+    # Odpověď s odkazem na stažení souboru
+        return {
+            "reply": (
+                "Tady je mé CV:\n"
+                "- [Zobrazit CV](https://telegram-hr-assistant-9i1t.onrender.com/cv)\n"
+                "- [Stáhnout CV](https://telegram-hr-assistant-9i1t.onrender.com/cv)"
+            )
+        }
 
     elif intent == "FAQ":
         answer = get_faq_answer(msg)
