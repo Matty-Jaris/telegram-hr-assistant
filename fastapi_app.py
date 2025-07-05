@@ -114,11 +114,12 @@ async def chat_handler(req: ChatRequest):
     # Odpověď s odkazem na stažení souboru
         return {
             "reply": (
-                "Tady je mé CV:\n"
-                "- [Zobrazit CV](https://telegram-hr-assistant-9i1t.onrender.com/cv)\n"
-                "- [Stáhnout CV](https://telegram-hr-assistant-9i1t.onrender.com/cv)"
+                'Tady je mé CV:<br>'
+                '<a href="https://telegram-hr-assistant-9i1t.onrender.com/cv" target="_blank" style="color:#2563eb;font-weight:bold;">Zobrazit CV</a> &nbsp; | &nbsp;'
+                '<a href="https://telegram-hr-assistant-9i1t.onrender.com/cv" download="martin-jarabek-cv.pdf" style="color:#2563eb;">Stáhnout CV</a>'
             )
         }
+
 
     elif intent == "FAQ":
         answer = get_faq_answer(msg)
