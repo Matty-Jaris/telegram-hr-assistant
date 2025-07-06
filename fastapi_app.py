@@ -24,7 +24,17 @@ async def chat_handler(req: ChatRequest):
         if "potvr" in text or "ano" in text:
             session_state[sid]["waiting_for_contact"] = True
             session_state[sid].pop("waiting_for_confirmation", None)
-            return {"reply": f"Skvěle! Pro potvrzení mi prosím napište své jméno, email a telefon (GDPR: Údaje slouží pouze ke kontaktování ohledně schůzky.)"}
+            return {"reply": (
+                        "Skvělé, děkuji za potvrzení termínu! 📅\n\n"
+                        "<b>Abychom mohli schůzku finálně domluvit, doplňte prosím své kontaktní údaje:</b>\n"
+                        "👤 Jméno a příjmení\n"
+                        "📧 E-mailová adresa\n"
+                        "📞 Telefonní číslo\n\n"
+                        "Stačí vše napsat do jedné zprávy, například:\n"
+                        "<i>Jan Novák, jan.novak@email.cz, 777 123 456</i>\n\n"
+                        "ℹ️ Vaše údaje budou použity výhradně za účelem domluvy schůzky a uchovány maximálně po dobu 30 dní."
+                    )
+            }
         elif "jiný" in text or "znovu" in text or "změnit" in text:
             session_state[sid] = {"waiting_for_date": True}
             return {"reply": "Navrhněte prosím nový termín schůzky (datum a čas)."}
@@ -58,7 +68,14 @@ async def chat_handler(req: ChatRequest):
             }
             kontakty = f"{info['name']} ({info['email']}, {info['phone']})"
             return {
-                "reply": f"Děkuji, schůzka potvrzena na {meeting_time}. Kontaktní údaje: {kontakty}.\nPokud jsou správné, napište 'OK'. Pokud chcete kontakty opravit, napište je znovu.",
+                "reply": (
+                    "✅ Nová schůzka potvrzena!\n\n"
+                    f"📅 Termín: <b>{meeting_time}</b>\n"
+                    f"👤 Jméno: <b>{info['name']}</b>\n"
+                    f"📞 Telefon: <b>{info['phone']}</b>\n"
+                    f"📧 E-mail: <b>{info['email']}</b>\n\n"
+                    "Pokud je vše správně, klikněte na tlačítko <b>OK</b> níže."
+                ),
                 "buttons": ["OK"]
             }
             
@@ -103,19 +120,28 @@ async def chat_handler(req: ChatRequest):
             }
             return {
                 "reply": (
-                    f"Zvolil jste termín: {term}.\nPotvrďte, prosím, jestli se Vám tento termín hodí.\n" +
-                    "Odpovězte: 'potvrzuji', 'jiný termín' nebo 'zrušit'."
+                    f"Zvolil jste termín: <b>{term}</b>.\n\n"
+                    "Potvrďte prosím, jestli se vám tento termín hodí. "
+                    "Vyberte jednu z možností níže:
                 ),
                 "buttons": ["potvrzuji", "jiný termín", "zrušit"]
             }
         else:
-            return {"reply": "Prosím, napište přesné datum a čas (např. 'Středa 17.7.2024 v 15:00')"}
+            return {"reply": "Prosím, napište přesné datum a čas (např. 'Středa 16.7.2024 v 15:00')"}
 
     # První detekce intence, hlavní rozcestník
     intent = detect_intent(msg)
     if intent == "MEETING":
         session_state[sid] = {"waiting_for_date": True}
-        return {"reply": "Rád se s vámi domluvím na schůzce/videohovoru.\\n\\nJelikož jsou právě letní prázniny jsem časově velmi flexibilní. Stačí, když mi napíšete den a čas, který vám vyhovuje,\\nnapř. „úterý 3.6.2025 v 15:30“ a můžeme spolu domluvit a potvrdit schůzku."}
+        return {"reply": (
+                    "Rád se s vámi domluvím na schůzce/videohovoru.\n\n"
+                    "Jelikož jsou právě letní prázdniny, jsem časově velmi flexibilní. "
+                    "Stačí, když mi napíšete den a čas, který vám vyhovuje.\n\n"
+                    "Například: *úterý 3.6.2025 v 15:30*\n\n"
+                    "Jakmile termín napíšete, ihned vše společně domluvíme a potvrdíme."
+                )
+        }
+
 
     elif intent == "CV":
     # Odpověď s odkazem na stažení souboru
@@ -124,9 +150,10 @@ async def chat_handler(req: ChatRequest):
                 'Tady je mé CV:<br>'
                 '<a href="https://telegram-hr-assistant-9i1t.onrender.com/cv" target="_blank" style="color:#2563eb;font-weight:bold;">Zobrazit CV</a>'
                 ' &nbsp;|&nbsp; '
-                '<a href="https://telegram-hr-assistant-9i1t.onrender.com/cv" download="martin-jarabek-cv.pdf" style="color:#2563eb;">Stáhnout CV</a>'
+                '<a href="https://telegram-hr-assistant-9i1t.onrender.com/cv/download" download="martin-jarabek-cv.pdf" style="color:#2563eb;">Stáhnout CV</a>'
             )
         }
+
 
 
 
@@ -147,12 +174,27 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from fastapi.responses import FileResponse
+
 @app.get("/cv")
 async def get_cv():
+    # Zobrazení v prohlížeči (inline)
     file_path = "source_materials/Resume_2025.pdf"
     headers = {
-        # Tímto vynutíš otevření v browseru místo stažení:
         "Content-Disposition": 'inline; filename="martin-jarabek-cv.pdf"'
+    }
+    return FileResponse(
+        path=file_path,
+        media_type="application/pdf",
+        headers=headers
+    )
+
+@app.get("/cv/download")
+async def download_cv():
+    # Vynucené stažení
+    file_path = "source_materials/Resume_2025.pdf"
+    headers = {
+        "Content-Disposition": 'attachment; filename="martin-jarabek-cv.pdf"'
     }
     return FileResponse(
         path=file_path,
