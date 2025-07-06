@@ -47,7 +47,7 @@ async def chat_handler(req: ChatRequest):
             log_to_airtable(
                 chat_id=sid,
                 question=f"Schůzka {meeting_time}",
-                answer=f"{info}",
+                answer=info,
                 category="MEETING",
                 term=meeting_time
             )
@@ -57,7 +57,11 @@ async def chat_handler(req: ChatRequest):
                 "contacts": info
             }
             kontakty = f"{info['name']} ({info['email']}, {info['phone']})"
-            return {"reply": f"Děkuji, schůzka potvrzena na {meeting_time}. Kontaktní údaje: {kontakty}.\nPokud jsou správné, napište 'OK'. Pokud chcete kontakty opravit, napište je znovu."}
+            return {
+                "reply": f"Děkuji, schůzka potvrzena na {meeting_time}. Kontaktní údaje: {kontakty}.\nPokud jsou správné, napište 'OK'. Pokud chcete kontakty opravit, napište je znovu.",
+                "buttons": ["OK"]
+            }
+            
         else:
             return {"reply": "Nepodařilo se rozpoznat všechny údaje. Zkuste prosím napsat své jméno, email a telefon v jednom textu."}
 
@@ -76,12 +80,15 @@ async def chat_handler(req: ChatRequest):
                 log_to_airtable(
                     chat_id=sid,
                     question=f"Schůzka {mt} (OPRAVA)",
-                    answer=f"{info}",
+                    answer=info,
                     category="MEETING"
                 )
                 session_state[sid]["contacts"] = info
                 kontakty = f"{info['name']} ({info['email']}, {info['phone']})"
-                return {"reply": f"Kontaktní údaje opraveny na: {kontakty}. Pokud jsou správné, napište 'OK'."}
+                return {
+                    "reply": f"Kontaktní údaje opraveny na: {kontakty}. Pokud jsou správné, napište 'OK'.",
+                    "buttons": ["OK"]
+                }
             else:
                 return {"reply": "Znovu se nepodařilo rozpoznat kontakty. Prosím napište jméno, email a telefon v jednom textu nebo napište 'OK', pokud už je vše v pořádku."}
 
@@ -115,10 +122,12 @@ async def chat_handler(req: ChatRequest):
         return {
             "reply": (
                 'Tady je mé CV:<br>'
-                '<a href="https://telegram-hr-assistant-9i1t.onrender.com/cv" target="_blank" style="color:#2563eb;font-weight:bold;">Zobrazit CV</a> &nbsp; | &nbsp;'
+                '<a href="https://telegram-hr-assistant-9i1t.onrender.com/cv" target="_blank" style="color:#2563eb;font-weight:bold;">Zobrazit CV</a>'
+                ' &nbsp;|&nbsp; '
                 '<a href="https://telegram-hr-assistant-9i1t.onrender.com/cv" download="martin-jarabek-cv.pdf" style="color:#2563eb;">Stáhnout CV</a>'
             )
         }
+
 
 
     elif intent == "FAQ":
