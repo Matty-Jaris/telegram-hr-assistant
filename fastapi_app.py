@@ -121,8 +121,8 @@ async def chat_handler(req: ChatRequest):
             return {
                 "reply": (
                     f"Zvolil jste termín: <b>{term}</b>.\n\n"
-                    "Potvrďte prosím, jestli se vám tento termín hodí. "
-                    "Vyberte jednu z možností níže:
+                    "Potvrďte prosím, jestli se vám tento termín hodí."
+                    "Vyberte jednu z možností níže:\n"
                 ),
                 "buttons": ["potvrzuji", "jiný termín", "zrušit"]
             }
