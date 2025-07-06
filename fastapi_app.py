@@ -2,7 +2,7 @@ from fastapi import FastAPI, Body
 from pydantic import BaseModel
 from helpers import detect_intent, extract_datetime, parse_contact, get_faq_answer, log_to_airtable
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 
 app = FastAPI()
 session_state = {}  # Na produkci raději Redis!
@@ -150,8 +150,12 @@ app.add_middleware(
 @app.get("/cv")
 async def get_cv():
     file_path = "source_materials/Resume_2025.pdf"
+    headers = {
+        # Tímto vynutíš otevření v browseru místo stažení:
+        "Content-Disposition": 'inline; filename="martin-jarabek-cv.pdf"'
+    }
     return FileResponse(
         path=file_path,
-        filename="martin-jarabek-cv.pdf",
-        media_type="application/pdf"
+        media_type="application/pdf",
+        headers=headers
     )
