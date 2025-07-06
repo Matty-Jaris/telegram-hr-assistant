@@ -59,10 +59,6 @@ def parse_contact(message):
         return False, {}
 
 
-# def log_to_airtable(chat_id, question, answer, category):
-#     airtable.insert({"Chat ID": chat_id, "Question": question, "Answer": answer, "Category": category, "Timestamp": datetime.now().isoformat()})
-
-
 def log_to_airtable(chat_id, question, answer, category, term=None):
     # Rozparsuj answer pokud je to dict, jinak nech být
     try:
