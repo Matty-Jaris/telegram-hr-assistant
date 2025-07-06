@@ -88,7 +88,7 @@ async def chat_handler(req: ChatRequest):
             mt = state["meeting_time"]
             info = state["contacts"]
             session_state[sid] = {}
-            return {"reply": f"Vše v pořádku! Schůzka na {mt} je zarezervována.<br><br>Pokud budete potřebovat změnu, napište mi.<br>Děkuji a těším se na setkání!"}
+            return {"reply": f"Vše v pořádku! Schůzka na <b>{mt}</b> je zarezervována.<br><br>Pokud budete potřebovat změnu, můžete mě kontaktovat na:<br>📞 Telefon: 727 919 163<br>📧 E-mail: martin.jar91@seznam.cz<br>Děkuji a těším se na setkání!"}
         else:
             # Uživatel poslal nové kontakty -> zkusíme znovu rozpoznat a uložit
             success, info = parse_contact(msg)
@@ -103,12 +103,12 @@ async def chat_handler(req: ChatRequest):
                 session_state[sid]["contacts"] = info
                 kontakty = f"{info['name']} ({info['email']}, {info['phone']})"
                 return {
-                    "reply": f"Kontaktní údaje opraveny na: {kontakty}. Pokud jsou správné, klikněte na tlačítko 'OK'.",
+                    "reply": f"Kontaktní údaje opraveny na: {kontakty}. Pokud jsou správné, klikněte na tlačítko <b>OK</b>.",
                     "buttons": ["OK"]
                 }
             else:
                 return {
-                    "reply": "Znovu se nepodařilo rozpoznat kontakty. <br><br>Prosím napište jméno, email a telefon v jednom textu, pokud je vše správně klikněte na tlačítko 'OK'.",
+                    "reply": "Znovu se nepodařilo rozpoznat kontakty. <br><br>Prosím napište jméno, email a telefon v jednom textu, pokud je vše správně klikněte na tlačítko <b>OK</b>.",
                     "buttons": ["OK"]
                 }
 
@@ -125,7 +125,7 @@ async def chat_handler(req: ChatRequest):
             return {
                 "reply": (
                     f"Zvolil jste termín: <b>{term}</b>.<br><br>"
-                    "Potvrďte prosím, jestli se vám tento termín hodí."
+                    "Potvrďte prosím, jestli se vám tento termín hodí. "
                     "Vyberte jednu z možností níže:<br>"
                 ),
                 "buttons": ["potvrzuji", "jiný termín", "zrušit"]
@@ -141,7 +141,7 @@ async def chat_handler(req: ChatRequest):
                     "Rád se s vámi domluvím na schůzce/videohovoru.<br><br>"
                     "Jelikož jsou právě letní prázdniny, jsem časově velmi flexibilní. "
                     "Stačí, když mi napíšete den a čas, který vám vyhovuje.<br><br>"
-                    "Například: *úterý 3.6.2025 v 15:30*<br><br>"
+                    "<b><i>Například: *úterý 3.6.2025 v 15:30*</i></b><br><br>"
                     "Jakmile termín napíšete, ihned vše společně domluvíme a potvrdíme."
                 )
         }
