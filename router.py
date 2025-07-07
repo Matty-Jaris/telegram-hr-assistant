@@ -8,18 +8,18 @@ from fastapi.responses import FileResponse
 
 router = APIRouter()
 
-WELCOME_PATH = Path("prompts/welcome_message.md")
-if WELCOME_PATH.exists():
-    WELCOME_MSG = WELCOME_PATH.read_text(encoding="utf-8")
-else:
-    WELCOME_MSG = "**Welcome message nenalezen.**"
+# WELCOME_PATH = Path("prompts/welcome_message.md")
+# if WELCOME_PATH.exists():
+#     WELCOME_MSG = WELCOME_PATH.read_text(encoding="utf-8")
+# else:
+#     WELCOME_MSG = "**Welcome message nenalezen.**"
 
-@router.get("/welcome")
-async def get_welcome():
-    """
-    Vrátí statickou uvítací zprávu.
-    """
-    return {"welcome": WELCOME_MSG}
+# @router.get("/welcome")
+# async def get_welcome():
+#     """
+#     Vrátí statickou uvítací zprávu.
+#     """
+#     return {"welcome": WELCOME_MSG}
  
 
 class Question(BaseModel):
