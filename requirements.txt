@@ -7,5 +7,4 @@ uvicorn
 airtable-python-wrapper
 httpx
 pydantic
-smtplib
 email

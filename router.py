@@ -4,6 +4,7 @@ from helpers import (
     get_faq_answer, detect_intent, extract_datetime, parse_contact, log_to_airtable
 )
 from pathlib import Path
+from fastapi.responses import FileResponse
 
 router = APIRouter()
 
@@ -19,9 +20,7 @@ async def get_welcome():
     Vrátí statickou uvítací zprávu.
     """
     return {"welcome": WELCOME_MSG}
-
-
-    
+ 
 
 class Question(BaseModel):
     question: str
@@ -52,7 +51,7 @@ async def parse_contact_info(payload: SimpleMessage):
     success, info = parse_contact(payload.message)
     return {"success": success, **info}
 
-from fastapi.responses import FileResponse
+
 
 
 
