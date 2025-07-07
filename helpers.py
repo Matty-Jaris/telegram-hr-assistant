@@ -3,9 +3,11 @@ from airtable import Airtable
 from rag.query_from_pinecone import retrieve_answer
 from datetime import datetime
 from dotenv import load_dotenv
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 load_dotenv()
 
-import os
 print("DEBUG: OPENAI_API_KEY:", os.getenv("OPENAI_API_KEY"))
 print("DEBUG: AIRTABLE_BASE:", os.getenv("AIRTABLE_BASE"))
 print("DEBUG: AIRTABLE_TOKEN:", os.getenv("AIRTABLE_TOKEN"))
@@ -81,5 +83,30 @@ def log_to_airtable(chat_id, question, answer, category, term=None):
         })
     except Exception as e:
         print("Chyba při logování do Airtable:", e)
+
+
+def send_notification_email(subject, body, to_email=None):
+    smtp_server = os.getenv("EMAIL_HOST")
+    port = int(os.getenv("EMAIL_PORT", "465"))
+    sender_email = os.getenv("EMAIL_USER")
+    password = os.getenv("EMAIL_PASSWORD")
+    receiver_email = to_email or os.getenv("EMAIL_TO")
+    
+    msg = MIMEMultipart()
+    msg["From"] = sender_email
+    msg["To"] = receiver_email
+    msg["Subject"] = subject
+
+    msg.attach(MIMEText(body, "plain"))
+    try:
+        with smtplib.SMTP_SSL(smtp_server, port) as server:
+            server.login(sender_email, password)
+            server.send_message(msg)
+        print("E-mail odeslán:", receiver_email)
+        return True
+    except Exception as e:
+        print("Chyba při odesílání e-mailu:", e)
+        return False
+
 
 

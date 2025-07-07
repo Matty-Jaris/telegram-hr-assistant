@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from helpers import detect_intent, extract_datetime, parse_contact, get_faq_answer, log_to_airtable
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response
+from helpers import send_notification_email
 
 app = FastAPI()
 session_state = {}  # Na produkci raději Redis!
@@ -88,6 +89,16 @@ async def chat_handler(req: ChatRequest):
             mt = state["meeting_time"]
             info = state["contacts"]
             session_state[sid] = {}
+            send_notification_email(
+                subject="Nová schůzka potvrzena",
+                body=(
+                    f"Potvrzena nová schůzka\n"
+                    f"Termín: {mt}\n"
+                    f"Jméno: {info['name']}\n"
+                    f"E-mail: {info['email']}\n"
+                    f"Telefon: {info['phone']}"
+                )
+            )
             return {"reply": f"Vše v pořádku! Schůzka na <b>{mt}</b> je zarezervována.<br><br>Pokud budete potřebovat změnu, můžete mě kontaktovat na:<br>📞 Telefon: 727 919 163<br>📧 E-mail: martin.jar91@seznam.cz<br>Děkuji a těším se na setkání!"}
         else:
             # Uživatel poslal nové kontakty -> zkusíme znovu rozpoznat a uložit
