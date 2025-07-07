@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response
 from fastapi.responses import StreamingResponse
 import asyncio, json
+from helpers import send_notification_email
 
 app = FastAPI()
 session_state = {}  # Na produkci raději Redis!
@@ -249,6 +250,15 @@ def generate_reply_and_buttons(msg, sid):
                 "Pokud je vše správně, klikněte na tlačítko <b>OK</b> níže."
             )
             buttons = ["OK"]
+            subject = f"Potvrzení nové schůzky: {meeting_time}"
+            body = (
+                f"Byla potvrzena nová schůzka:\n\n"
+                f"Termín: {meeting_time}\n"
+                f"Jméno: {info['name']}\n"
+                f"E-mail: {info['email']}\n"
+                f"Telefon: {info['phone']}\n"
+            )
+            send_notification_email(subject, body)
         else:
             reply = "Nepodařilo se rozpoznat všechny údaje.<br>Zkuste prosím napsat své jméno, email a telefon v jednom textu."
 
