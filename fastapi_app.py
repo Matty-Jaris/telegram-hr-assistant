@@ -265,8 +265,16 @@ def generate_reply_and_buttons(msg, sid):
         if "ok" in msg.lower():
             mt = state["meeting_time"]
             info = state["contacts"]
-            session_state[sid] = {}
+            subject = f"Potvrzená schůzka: {mt}"
+            body = (
+                f"Byla potvrzena nová schůzka:\n\n"
+                f"Termín: {mt}\n"
+                f"Jméno: {info['name']}\n"
+                f"E-mail: {info['email']}\n"
+                f"Telefon: {info['phone']}\n"
+            )
             send_notification_email(subject, body)
+            session_state[sid] = {}
             reply = f"Vše v pořádku! Schůzka na <b>{mt}</b> je zarezervována.<br><br>Pokud budete potřebovat změnu, můžete mě kontaktovat na:<br>📞 Telefon: 727 919 163<br>📧 E-mail: martin.jar91@seznam.cz<br>Děkuji a těším se na setkání!"
         else:
             success, info = parse_contact(msg)
