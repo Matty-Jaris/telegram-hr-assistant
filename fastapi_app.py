@@ -258,7 +258,6 @@ def generate_reply_and_buttons(msg, sid):
                 f"E-mail: {info['email']}\n"
                 f"Telefon: {info['phone']}\n"
             )
-            send_notification_email(subject, body)
         else:
             reply = "Nepodařilo se rozpoznat všechny údaje.<br>Zkuste prosím napsat své jméno, email a telefon v jednom textu."
 
@@ -267,6 +266,7 @@ def generate_reply_and_buttons(msg, sid):
             mt = state["meeting_time"]
             info = state["contacts"]
             session_state[sid] = {}
+            send_notification_email(subject, body)
             reply = f"Vše v pořádku! Schůzka na <b>{mt}</b> je zarezervována.<br><br>Pokud budete potřebovat změnu, můžete mě kontaktovat na:<br>📞 Telefon: 727 919 163<br>📧 E-mail: martin.jar91@seznam.cz<br>Děkuji a těším se na setkání!"
         else:
             success, info = parse_contact(msg)
