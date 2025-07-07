@@ -350,23 +350,10 @@ async def chat_stream(req: ChatRequest):
     reply, buttons = generate_reply_and_buttons(req.message.strip(), req.session_id)
 
     async def streamer():
-        # Streamuj text po částech (např. 3 slova)
-        words = reply.split(" ")
-        buf = ""
-        for i, word in enumerate(words):
-            if buf:
-                buf += " "
-            buf += word
-            if (i + 1) % 3 == 0 or i == len(words) - 1:
-                yield buf
-                await asyncio.sleep(0.17)
-                buf = ""
-        if buf:
-            yield buf
-        # Po dopisování textu pošli buttons jako JSON blok
+        for word in reply.split(" "):
+            yield word + " "
+            await asyncio.sleep(0.11)
         if buttons:
-            # Odděl speciálním prefixem, aby to frontend poznal
             yield "\n\n[[[BUTTONS]]]" + json.dumps(buttons)
-
     return StreamingResponse(streamer(), media_type="text/plain")
 
