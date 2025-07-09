@@ -8,20 +8,6 @@ from fastapi.responses import FileResponse
 
 router = APIRouter()
 
-# WELCOME_PATH = Path("prompts/welcome_message.md")
-# if WELCOME_PATH.exists():
-#     WELCOME_MSG = WELCOME_PATH.read_text(encoding="utf-8")
-# else:
-#     WELCOME_MSG = "**Welcome message nenalezen.**"
-
-# @router.get("/welcome")
-# async def get_welcome():
-#     """
-#     Vrátí statickou uvítací zprávu.
-#     """
-#     return {"welcome": WELCOME_MSG}
- 
-
 class Question(BaseModel):
     question: str
     chat_id: str = None
@@ -30,10 +16,21 @@ class Question(BaseModel):
 class SimpleMessage(BaseModel):
     message: str
 
+# @router.post("/ask_stream")
+# async def ask_stream(payload: Question, background_tasks: BackgroundTasks):
+#     answer = get_faq_answer(payload.question)
+#     background_tasks.add_task(log_to_airtable, payload.chat_id, payload.question, answer, "FAQ")
+#     return {"answer": answer}
+
 @router.post("/ask_stream")
 async def ask_stream(payload: Question, background_tasks: BackgroundTasks):
     answer = get_faq_answer(payload.question)
-    background_tasks.add_task(log_to_airtable, payload.chat_id, payload.question, answer, "FAQ")
+    # Pokud není odpověď známá (podle přesného textu), logujeme jako NOANSWER
+    if answer.strip().lower().startswith("omlouvám se") or answer.strip().lower().startswith("na tuto otázku nedokážu"):
+        category = "NOANSWER"
+    else:
+        category = "FAQ"
+    background_tasks.add_task(log_to_airtable, payload.chat_id, payload.question, answer, category)
     return {"answer": answer}
 
 @router.post("/detect_intent")
