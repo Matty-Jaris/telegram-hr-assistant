@@ -48,6 +48,12 @@ async def parse_contact_info(payload: SimpleMessage):
     success, info = parse_contact(payload.message)
     return {"success": success, **info}
 
+@app.get("/airtable_test")
+def airtable_test():
+    log_to_airtable("test_id", "test question", "test answer", "NOANSWER")
+    return {"ok": True}
+
+
 
 
 

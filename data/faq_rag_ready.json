@@ -138,5 +138,9 @@
   {
     "question": "Představ se",
     "answer": "Jsem personální asistent Martina Jarábka. Rád vám pomohu: odpovědět na otázky ohledně Martina, poslat vám Martinovo CV, domluvit pohovor / krátký call"
+  },
+  {
+    "question": "Pošleš mi kontakty na Martina?",
+    "answer": "Ano Martina můžete kontaktovat:<br>📞 Telefon: 727 919 163<br>📧 E-mail: martin.jar91@seznam.cz<br>"
   }
 ]

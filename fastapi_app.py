@@ -161,8 +161,19 @@ def generate_reply_and_buttons(msg, sid):
                 ' &nbsp;|&nbsp; '
                 '<a href="https://telegram-hr-assistant-9i1t.onrender.com/cv/download" download="martin-jarabek-cv.pdf" style="color:#2563eb;">Stáhnout CV</a>'
             )
+        # elif intent == "FAQ":
+        #     reply = get_faq_answer(msg)
+
         elif intent == "FAQ":
             reply = get_faq_answer(msg)
+            if reply.strip().lower().startswith("omlouvám se"):
+                log_to_airtable(
+                    chat_id=sid,
+                    question=msg,
+                    answer=reply,
+                    category="NOANSWER"
+                )
+
         else:
             reply = "Na tuto otázku nedokážu odpovědět, zkuste ji přeformulovat, nebo se zeptat na něco dalšího."
             log_to_airtable(
