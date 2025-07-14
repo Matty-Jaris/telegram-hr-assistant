@@ -40,6 +40,14 @@
     "answer": "Martin Jarábek je juniorní vývojář se zaměřením na Python, FastAPI a webové technologie. Má více než 10 let zkušeností s prací s lidmi jako učitel a do IT přináší výborné komunikační schopnosti, systematičnost a touhu zjednodušovat složité věci pomocí automatizace. Aktivně tvoří projekty jako například svého Telegram asistenta a aplikaci na počasí. Je pečlivý, spolehlivý a dobře organizovaný."
   },
   {
+    "question": "Jaké jsou tvé dovednosti?",
+    "answer": "Pracuji hlavně v Pythonu (FastAPI, Django), zvládám HTML, CSS (Tailwind), základy JavaScriptu a SQL. Umím spravovat projekty v Gitu a na GitHubu, pracuji s databázemi (SQLite), automatizací v n8n a zapojuji externí API (například OpenWeatherMap, Telegram bot). Weby umím nasadit do cloudu (Render, Railway) a projekty najdeš na mém GitHubu."
+  },
+  {
+    "question": "V jakých technologiích a nástrojích se vyznáš?",
+    "answer": "Pracuji hlavně v Pythonu (FastAPI, Django), zvládám HTML, CSS (Tailwind), základy JavaScriptu a SQL. Umím spravovat projekty v Gitu a na GitHubu, pracuji s databázemi (SQLite), automatizací v n8n a zapojuji externí API (například OpenWeatherMap, Telegram bot). Weby umím nasadit do cloudu (Render, Railway) a projekty najdeš na mém GitHubu."
+  },
+  {
     "question": "Co tě baví na programování?",
     "answer": "Na programování mě baví, jak rychle člověka vtáhne samotný proces tvorby. Líbí se mi, že je to neustálé řešení problémů a hledání cest, které nakonec vedou k funkčnímu výsledku. Je skvělý pocit vidět, že něco funguje díky vlastní práci. Říká se, že když vám při něčem utíká čas, děláte to, co vás baví – a to přesně u mě platí."
   },
@@ -53,23 +61,23 @@
   },
   {
     "question": "Jaké technologie používáš nejčastěji?",
-    "answer": "Nejčastěji pracuji s Pythonem (především FastAPI a Django) a s HTML/CSS. Na stylování používám Tailwind CSS, verzování řeším přes Git a GitHub. Pro automatizace používám n8n, který propojuji s API a externími službami. Vedle toho se učím JavaScript a základy SQL."
-  },  
+    "answer": "Nejčastěji pracuji v Pythonu – hlavně s FastAPI a Djangem. Pro weby používám HTML, CSS (Tailwind CSS) a základy JavaScriptu. Pracuji s databázemi (SQL, SQLite), spravuji projekty přes Git a GitHub. Automatizaci a integrace řeším v n8n a rád zapojuji externí API, například OpenWeatherMap nebo Telegram bota."
+  },
   {
     "question": "V čem umíš programovat?",
-    "answer": "Nejvíc se orientuji v Pythonu – ten používám na tvorbu webových aplikací, API i skriptování. Umím pracovat s HTML, CSS a částečně JavaScriptem. Dále zvládám práci s Gitem, píšu dotazy v SQL a učím se pokročilejší práci s API a backend logikou."
+    "answer": "Nejvíc programuji v Pythonu – tvořím v něm webové aplikace (FastAPI, Django), API i automatizace. Umím HTML, CSS (včetně Tailwindu) a základy JavaScriptu pro frontend. Pracuji s databázemi (SQL, SQLite), používám Git a GitHub a zvládám automatizaci a integrace pomocí n8n."
   },
   {
     "question": "Jaké máš zkušenosti s webem?",
-    "answer": "Vytvářím vlastní webové aplikace v Pythonu – hlavně pomocí FastAPI a Django. Zvládám šablony (Jinja2), routování, práci s formuláři, čtení dat z API, nasazení na služby jako Render nebo Railway a úpravu stylů přes Tailwind CSS. Moje portfolio a projekty jsou dostupné na GitHubu a veřejně online."
+    "answer": "Vyvíjím webové aplikace v Pythonu (FastAPI, Django) – od backendu, přes práci s databází a integraci externích API, až po šablony (Jinja2), routování a formuláře. Weby styluji v HTML, CSS (Tailwind) a základech JavaScriptu. Umím nasadit projekty do cloudu (Render, Railway) a automatizovat workflow pomocí n8n. Moje projekty jsou dostupné na GitHubu i online."
   },
   {
     "question": "Děláš i backend nebo frontend?",
-    "answer": "Zaměřuji se hlavně na backend – FastAPI, Django, zpracování requestů, logiku a práci s daty. Frontend zvládám na základní úrovni: HTML, CSS, Tailwind a jednoduchý JavaScript. Většinu projektů stavím end-to-end, takže umím celé flow od API po zobrazení ve webové stránce."
+    "answer": "Specializuji se na backend – stavím aplikace v Pythonu pomocí FastAPI a Djanga, pracuji s databázemi a integrací API. Frontend zvládám na solidní úrovni v HTML, CSS (Tailwind) a základech JavaScriptu. Většinu svých projektů realizuji kompletně – od backendu až po nasazení a moderní vzhled webu."
   },
   {
     "question": "Rozumíš Gitu a práci v týmu?",
-    "answer": "Ano – denně pracuji s Gitem a GitHubem na svých projektech. Umím vytvářet a spravovat větve, dělat pull requesty, řešit konflikty a přehledně commitovat změny. Využívám Git i při osobních experimentech, ale držím si návyky jako v týmu – čisté zprávy, oddělení verzí a průběžné zálohování. Zkušenost s reálným týmem zatím sbírám přes spolupráce a veřejné repozitáře, ale prostředí týmové práce mi je přirozené díky předchozím letům ve škole."
+    "answer": "Ano, s Gitem a GitHubem pracuji denně – umím verzovat projekty, vytvářet a spravovat větve, pull requesty i řešit konflikty. Dbám na přehledné commit zprávy a týmové workflow. Reálnou týmovou spolupráci si zkouším na veřejných repozitářích a menších projektech, a z předchozí profese mám zkušenosti s kolektivní prací a komunikací."
   },
   {
     "question": "Máš nějaké ukázky projektů?",
@@ -140,7 +148,7 @@
     "answer": "Jsem personální asistent Martina Jarábka. Rád vám pomohu: odpovědět na otázky ohledně Martina, poslat vám Martinovo CV, domluvit pohovor / krátký call"
   },
   {
-    "question": "Pošleš mi kontakty na Martina?",
+    "question": "Pošleš mi kontakty, mobil, číslo, telefon, nebo email na Martina?",
     "answer": "Ano Martina můžete kontaktovat:<br>📞 Telefon: 727 919 163<br>📧 E-mail: martin.jar91@seznam.cz<br>"
   }
 ]
